@@ -105,7 +105,7 @@ export default function Footer({ big = true }: { big?: boolean }) {
 
       {big && (
         <div className="mt-10 text-center leading-[0.78]">
-          <div className="font-poster text-[clamp(110px,26vw,400px)] tracking-wide text-cream [text-shadow:5px_6px_0_rgba(0,0,0,0.14)]">
+          <div className="font-poster text-[clamp(56px,24vw,400px)] tracking-tight text-cream [text-shadow:5px_6px_0_rgba(0,0,0,0.14)]">
             SMASH
           </div>
         </div>

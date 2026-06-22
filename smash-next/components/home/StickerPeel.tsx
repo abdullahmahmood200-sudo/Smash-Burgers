@@ -30,15 +30,15 @@ export default function StickerPeel() {
             clipPath: "polygon(0 0, 100% 0, 100% 78%, 78% 100%, 0 100%)",
           }}
         >
-          <div className="-rotate-3 font-poster text-[46px] tracking-wide text-yellow-bright [text-shadow:3px_3px_0_rgba(0,0,0,0.18)]">
+          <div className="-rotate-3 font-poster text-[clamp(34px,9vw,46px)] tracking-wide text-yellow-bright [text-shadow:3px_3px_0_rgba(0,0,0,0.18)]">
             SMASH
           </div>
-          <div className="h-[120px] w-[120px]">
+          <div className="h-[clamp(150px,46%,210px)] w-[clamp(150px,46%,210px)]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/assets/burger.png"
-              alt=""
-              className="block w-full [filter:drop-shadow(0_8px_10px_rgba(0,0,0,0.3))]"
+              alt="Smash burger"
+              className="block h-full w-full object-contain [filter:drop-shadow(0_8px_10px_rgba(0,0,0,0.3))]"
             />
           </div>
           <div className="font-body text-lg font-bold tracking-[3px] text-white">
