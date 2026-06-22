@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SMASH Burgers — The Menu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Luckiest+Guy&family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  @media (hover:hover) and (pointer:fine){ body, a, button { cursor: none !important; } }
+
+  /* ---------- PAGE VEIL TRANSITION (CSS-animation driven) ---------- */
+  #veil { position:fixed; inset:0; background:#E8190B; z-index:99000; transform:translateX(100%); pointer-events:none;
+          display:flex; align-items:center; justify-content:center; }
+  #veil .veil-mark { font-family:'Luckiest Guy',cursive; color:#FFD23F; font-size:clamp(40px,9vw,90px); letter-spacing:3px;
+          transform:rotate(-3deg); text-shadow:3px 3px 0 rgba(0,0,0,.18); opacity:0; transition:opacity .25s ease; }
+  #veil.show-mark .veil-mark { opacity:1; }
+  @keyframes veilCoverFwd  { from{transform:translateX(100%)}  to{transform:translateX(0)} }
+  @keyframes veilCoverBack { from{transform:translateX(-100%)} to{transform:translateX(0)} }
+  @keyframes veilWipeFwd   { from{transform:translateX(0)} to{transform:translateX(-100%)} }
+  @keyframes veilWipeBack  { from{transform:translateX(0)} to{transform:translateX(100%)} }
+  #veil.cover-fwd  { animation: veilCoverFwd  .5s cubic-bezier(.76,0,.24,1) forwards; }
+  #veil.cover-back { animation: veilCoverBack .5s cubic-bezier(.76,0,.24,1) forwards; }
+  #veil.wipe-fwd   { animation: veilWipeFwd   .6s cubic-bezier(.76,0,.24,1) forwards; }
+  #veil.wipe-back  { animation: veilWipeBack  .6s cubic-bezier(.76,0,.24,1) forwards; }
+
+  /* ---------- MOBILE HAMBURGER + DRAWER ---------- */
+  .nav-burger { display:none; }
+  #drawerBackdrop { position:fixed; inset:0; background:rgba(26,20,16,.55); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px);
+          opacity:0; pointer-events:none; transition:opacity .3s ease; z-index:60000; }
+  #drawerBackdrop.open { opacity:1; pointer-events:auto; }
+  #drawer { position:fixed; top:0; right:0; height:100%; width:min(82vw,330px); background:#E8190B; z-index:60001;
+          transform:translateX(105%); transition:transform .45s cubic-bezier(.5,1.45,.5,1);
+          display:flex; flex-direction:column; padding:88px 30px 40px; box-shadow:-12px 0 44px rgba(0,0,0,.3); }
+  #drawer.open { transform:translateX(0); }
+  #drawer a { font-family:'Luckiest Guy',cursive; color:#F7E1CD; text-decoration:none; font-size:21px; letter-spacing:1px;
+          padding:15px 2px; border-bottom:1px solid rgba(247,225,205,.18); transition:color .2s ease, padding-left .2s ease; }
+  #drawer a:hover { color:#FFD23F; padding-left:8px; }
+  #drawer a.drawer-signin { margin-top:22px; background:#FFD23F; color:#E8190B; text-align:center; border-radius:44px;
+          border:none; padding:17px 16px; }
+  #drawer a.drawer-signin:hover { padding-left:16px; }
+  #drawerClose { position:absolute; top:26px; right:24px; width:42px; height:42px; border:none; background:transparent;
+          padding:0; display:flex; align-items:center; justify-content:center; }
+  #drawerClose::before, #drawerClose::after { content:''; position:absolute; width:26px; height:3px; background:#F7E1CD; border-radius:2px; }
+  #drawerClose::before { transform:rotate(45deg); }
+  #drawerClose::after { transform:rotate(-45deg); }
+
+  /* Card spring pop-in is driven by render() in JS (initial hidden state is inline). */
+
+  @media (max-width:760px){
+    .nav-desktop { display:none !important; }
+    .nav-burger { display:inline-flex !important; }
+    nav[aria-label="primary"] { padding:20px 22px !important; }
+  }
+  @media (max-width:600px){
+    .menu-grid { grid-template-columns:1fr !important; padding-left:18px !important; padding-right:18px !important; }
+  }
+</style>
+</head>
+<body>
+<div id="cursorRing" style="position:fixed; left:0; top:0; width:40px; height:40px; border:2.5px solid #E8190B; border-radius:50%; pointer-events:none; z-index:99998; transform:translate(-50%,-50%); opacity:0; transition:opacity .35s ease, width .25s ease, height .25s ease, background .25s ease;"></div>
+<div id="cursorDot" style="position:fixed; left:0; top:0; width:8px; height:8px; background:#E8190B; border-radius:50%; pointer-events:none; z-index:99999; transform:translate(-50%,-50%); opacity:0; transition:opacity .35s ease;"></div>
+
+<div style="background:#F7E1CD; min-height:100vh; width:100%; font-family:'Fredoka',sans-serif; color:#E8190B;">
+
+  <!-- NAV -->
+  <nav aria-label="primary" style="display:flex; align-items:center; justify-content:space-between; padding:28px 40px; position:relative; z-index:60;">
+    <a data-cursor href="index.html" style="font-family:'Luckiest Guy',cursive; font-size:clamp(34px,3.4vw,52px); color:#E8190B; letter-spacing:1px; line-height:.9; transform:rotate(-3deg); text-shadow:3px 3px 0 #fff; text-decoration:none;">SMASH</a>
+    <div class="nav-desktop" style="display:flex; align-items:center; gap:14px;">
+      <a data-cursor href="#" style="font-family:'Luckiest Guy',cursive; font-size:clamp(14px,1.1vw,18px); letter-spacing:1px; color:#fff; background:#E8190B; padding:14px 30px; border-radius:40px; text-decoration:none;">ORDER</a>
+      <a data-cursor href="index.html" style="font-family:'Luckiest Guy',cursive; font-size:clamp(14px,1.1vw,18px); letter-spacing:1px; color:#fff; background:#E8190B; padding:14px 30px; border-radius:40px; text-decoration:none;">HOME</a>
+    </div>
+    <button id="navBurger" class="nav-burger" data-cursor aria-label="Open menu" style="cursor:pointer; align-items:center; justify-content:center; flex-direction:column; gap:5px; width:50px; height:50px; border:none; background:#E8190B; border-radius:14px; padding:0;">
+      <span style="display:block; width:22px; height:3px; background:#fff; border-radius:2px;"></span>
+      <span style="display:block; width:22px; height:3px; background:#fff; border-radius:2px;"></span>
+      <span style="display:block; width:22px; height:3px; background:#fff; border-radius:2px;"></span>
+    </button>
+  </nav>
+
+  <!-- ============ MOBILE DRAWER ============ -->
+  <div id="drawerBackdrop"></div>
+  <nav id="drawer" aria-label="Mobile menu">
+    <button id="drawerClose" data-cursor aria-label="Close menu"></button>
+    <a data-cursor href="index.html">HOME</a>
+    <a data-cursor href="#">ORDER</a>
+    <a data-cursor href="index.html#locations">LOCATIONS</a>
+    <a data-cursor class="drawer-signin" href="#">SIGN IN</a>
+  </nav>
+
+  <!-- ============ PAGE VEIL ============ -->
+  <div id="veil"><div class="veil-mark">SMASH</div></div>
+
+  <!-- HEADER -->
+  <div style="text-align:center; padding:14px 32px 6px;">
+    <h1 style="font-family:'Lilita One',cursive; color:#FF1106; font-size:clamp(46px,13vw,220px); line-height:.82; margin:0; letter-spacing:-.01em; text-shadow:5px 5px 0 #fff, -3px -3px 0 #fff, 3px -3px 0 #fff, -3px 3px 0 #fff;">THE MENU</h1>
+    <p style="font-size:clamp(18px,1.6vw,26px); font-weight:600; color:#2A1408; margin:18px auto 0; max-width:600px; line-height:1.3;">Hover a burger to blow it apart. Tap on mobile to see every layer. Then get it in your hands.</p>
+  </div>
+
+  <!-- backdrop for touch -->
+  <div id="backdrop" style="position:fixed; inset:0; z-index:5; background:rgba(26,20,16,.5); backdrop-filter:blur(7px); -webkit-backdrop-filter:blur(7px); transition:opacity .3s ease; opacity:0; pointer-events:none;"></div>
+
+  <!-- GRID -->
+  <section class="menu-grid" style="max-width:1240px; margin:0 auto; padding:46px 40px 100px; display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:34px; overflow:visible;">
+
+    <!-- CARD 1 -->
+    <div data-card="0" style="position:relative; z-index:1; background:#FCEFD9; border-radius:30px; padding:24px 24px 26px; display:flex; flex-direction:column; cursor:pointer; transition:transform .7s cubic-bezier(.34,1.56,.64,1), opacity .5s ease, box-shadow .3s ease; transform:translateY(48px) scale(.92); opacity:0; box-shadow:0 14px 30px rgba(42,20,8,.10);">
+      <div style="display:flex; align-items:baseline; justify-content:space-between; gap:14px;">
+        <h3 style="font-family:'Lilita One',cursive; color:#FF1106; font-size:clamp(28px,2.5vw,40px); line-height:.92; margin:0; letter-spacing:-.01em;">The Classic Smash</h3>
+        <span style="font-family:'Lilita One',cursive; color:#E8190B; font-size:clamp(26px,2.2vw,38px); line-height:.9;">$12</span>
+      </div>
+      <p style="font-size:16px; font-weight:600; color:#2A1408; line-height:1.3; margin:12px 0 16px; min-height:62px;">Double smashed patties, American cheese, crisp lettuce, vine tomato, pickles and our smash sauce.</p>
+      <div style="position:relative; width:100%; aspect-ratio:4/5; border-radius:20px; overflow:hidden; background:#D8B68D;">
+        <div style="position:absolute; top:16px; left:16px; z-index:3; font-family:'Luckiest Guy',cursive; color:#fff; background:#F6A01C; font-size:14px; letter-spacing:1px; padding:8px 16px; border-radius:30px; transform:rotate(-4deg); box-shadow:0 4px 0 rgba(0,0,0,.12);">CLASSIC</div>
+        <img data-def src="assets/card1-default.jpg" alt="The Classic Smash" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center; transition:opacity .45s ease; opacity:1;">
+        <img data-exp src="assets/card1-explode.jpg" alt="The Classic Smash exploded" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center; transition:opacity .45s ease; opacity:0;">
+      </div>
+      <button style="margin-top:20px; width:100%; cursor:pointer; border:none; font-family:'Luckiest Guy',cursive; color:#fff; background:#E8190B; font-size:clamp(17px,1.4vw,21px); letter-spacing:1px; padding:18px 20px; border-radius:46px; box-shadow:0 6px 0 rgba(0,0,0,.14);">ADD TO CART</button>
+    </div>
+
+    <!-- CARD 2 -->
+    <div data-card="1" style="position:relative; z-index:1; background:#FCEFD9; border-radius:30px; padding:24px 24px 26px; display:flex; flex-direction:column; cursor:pointer; transition:transform .7s cubic-bezier(.34,1.56,.64,1), opacity .5s ease, box-shadow .3s ease; transform:translateY(48px) scale(.92); opacity:0; box-shadow:0 14px 30px rgba(42,20,8,.10);">
+      <div style="display:flex; align-items:baseline; justify-content:space-between; gap:14px;">
+        <h3 style="font-family:'Lilita One',cursive; color:#FF1106; font-size:clamp(28px,2.5vw,40px); line-height:.92; margin:0; letter-spacing:-.01em;">The Double Stack</h3>
+        <span style="font-family:'Lilita One',cursive; color:#E8190B; font-size:clamp(26px,2.2vw,38px); line-height:.9;">$15</span>
+      </div>
+      <p style="font-size:16px; font-weight:600; color:#2A1408; line-height:1.3; margin:12px 0 16px; min-height:62px;">Triple-stacked beef, smoked cheddar, layers of crispy bacon and a sweet smoky glaze.</p>
+      <div style="position:relative; width:100%; aspect-ratio:4/5; border-radius:20px; overflow:hidden; background:#D8B68D;">
+        <div style="position:absolute; top:16px; left:16px; z-index:3; font-family:'Luckiest Guy',cursive; color:#fff; background:#F6A01C; font-size:14px; letter-spacing:1px; padding:8px 16px; border-radius:30px; transform:rotate(-4deg); box-shadow:0 4px 0 rgba(0,0,0,.12);">LOADED</div>
+        <img data-def src="assets/card2-default.jpg" alt="The Double Stack" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center; transition:opacity .45s ease; opacity:1;">
+        <img data-exp src="assets/card2-explode.jpg" alt="The Double Stack exploded" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center; transition:opacity .45s ease; opacity:0;">
+      </div>
+      <button style="margin-top:20px; width:100%; cursor:pointer; border:none; font-family:'Luckiest Guy',cursive; color:#fff; background:#E8190B; font-size:clamp(17px,1.4vw,21px); letter-spacing:1px; padding:18px 20px; border-radius:46px; box-shadow:0 6px 0 rgba(0,0,0,.14);">ADD TO CART</button>
+    </div>
+
+    <!-- CARD 3 -->
+    <div data-card="2" style="position:relative; z-index:1; background:#FCEFD9; border-radius:30px; padding:24px 24px 26px; display:flex; flex-direction:column; cursor:pointer; transition:transform .7s cubic-bezier(.34,1.56,.64,1), opacity .5s ease, box-shadow .3s ease; transform:translateY(48px) scale(.92); opacity:0; box-shadow:0 14px 30px rgba(42,20,8,.10);">
+      <div style="display:flex; align-items:baseline; justify-content:space-between; gap:14px;">
+        <h3 style="font-family:'Lilita One',cursive; color:#FF1106; font-size:clamp(28px,2.5vw,40px); line-height:.92; margin:0; letter-spacing:-.01em;">The Signature</h3>
+        <span style="font-family:'Lilita One',cursive; color:#E8190B; font-size:clamp(26px,2.2vw,38px); line-height:.9;">$17</span>
+      </div>
+      <p style="font-size:16px; font-weight:600; color:#2A1408; line-height:1.3; margin:12px 0 16px; min-height:62px;">Brioche bun, fried egg, smashed beef, molten cheddar, herb crema and wild arugula.</p>
+      <div style="position:relative; width:100%; aspect-ratio:4/5; border-radius:20px; overflow:hidden; background:#D8B68D;">
+        <div style="position:absolute; top:16px; left:16px; z-index:3; font-family:'Luckiest Guy',cursive; color:#fff; background:#F6A01C; font-size:14px; letter-spacing:1px; padding:8px 16px; border-radius:30px; transform:rotate(-4deg); box-shadow:0 4px 0 rgba(0,0,0,.12);">CHEF'S PICK</div>
+        <img data-def src="assets/card3-default.jpg" alt="The Signature" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center; transition:opacity .45s ease; opacity:1;">
+        <img data-exp src="assets/card3-explode.jpg" alt="The Signature exploded" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center; transition:opacity .45s ease; opacity:0;">
+      </div>
+      <button style="margin-top:20px; width:100%; cursor:pointer; border:none; font-family:'Luckiest Guy',cursive; color:#fff; background:#E8190B; font-size:clamp(17px,1.4vw,21px); letter-spacing:1px; padding:18px 20px; border-radius:46px; box-shadow:0 6px 0 rgba(0,0,0,.14);">ADD TO CART</button>
+    </div>
+
+    <!-- PLACEHOLDER 4 -->
+    <div style="position:relative; z-index:1; background:#FCEFD9; border-radius:30px; padding:24px; display:flex; flex-direction:column;">
+      <div style="width:100%; aspect-ratio:3/4; border-radius:20px; background:repeating-linear-gradient(135deg,#E7DFD2,#E7DFD2 14px,#E0D7C8 14px,#E0D7C8 28px); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;">
+        <div style="font-family:'Lilita One',cursive; color:#B6A892; font-size:clamp(30px,3vw,46px); line-height:.9; text-align:center;">COMING<br>SOON</div>
+        <div style="font-family:'Fredoka',sans-serif; font-weight:600; color:#B6A892; font-size:15px; letter-spacing:1px;">NEW DROP LOADING</div>
+      </div>
+    </div>
+
+    <!-- PLACEHOLDER 5 -->
+    <div style="position:relative; z-index:1; background:#FCEFD9; border-radius:30px; padding:24px; display:flex; flex-direction:column;">
+      <div style="width:100%; aspect-ratio:3/4; border-radius:20px; background:repeating-linear-gradient(135deg,#E7DFD2,#E7DFD2 14px,#E0D7C8 14px,#E0D7C8 28px); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;">
+        <div style="font-family:'Lilita One',cursive; color:#B6A892; font-size:clamp(30px,3vw,46px); line-height:.9; text-align:center;">COMING<br>SOON</div>
+        <div style="font-family:'Fredoka',sans-serif; font-weight:600; color:#B6A892; font-size:15px; letter-spacing:1px;">NEW DROP LOADING</div>
+      </div>
+    </div>
+
+    <!-- PLACEHOLDER 6 -->
+    <div style="position:relative; z-index:1; background:#FCEFD9; border-radius:30px; padding:24px; display:flex; flex-direction:column;">
+      <div style="width:100%; aspect-ratio:3/4; border-radius:20px; background:repeating-linear-gradient(135deg,#E7DFD2,#E7DFD2 14px,#E0D7C8 14px,#E0D7C8 28px); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;">
+        <div style="font-family:'Lilita One',cursive; color:#B6A892; font-size:clamp(30px,3vw,46px); line-height:.9; text-align:center;">COMING<br>SOON</div>
+        <div style="font-family:'Fredoka',sans-serif; font-weight:600; color:#B6A892; font-size:15px; letter-spacing:1px;">NEW DROP LOADING</div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- FOOTER -->
+  <footer style="background:#E8190B; color:#F7E1CD; padding:70px 40px 40px;">
+    <div style="max-width:1240px; margin:0 auto;">
+
+      <div style="font-family:'Luckiest Guy',cursive; font-size:clamp(40px,9vw,140px); line-height:.85; color:#F7E1CD; letter-spacing:1px; text-shadow:4px 4px 0 rgba(0,0,0,.12); margin-bottom:50px;">SMASH</div>
+
+      <div style="display:flex; flex-wrap:wrap; gap:48px 60px; justify-content:space-between;">
+
+        <div style="min-width:170px;">
+          <h4 style="font-family:'Luckiest Guy',cursive; color:#FFD23F; font-size:22px; letter-spacing:1px; margin:0 0 20px;">HELPFUL LINKS</h4>
+          <ul style="list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:12px;">
+            <li><a data-cursor href="#" style="color:#F7E1CD; text-decoration:none; font-weight:600; font-size:17px;" style-hover="color:#FFD23F">About Us</a></li>
+            <li><a data-cursor href="#" style="color:#F7E1CD; text-decoration:none; font-weight:600; font-size:17px;" style-hover="color:#FFD23F">Our Food</a></li>
+            <li><a data-cursor href="#" style="color:#F7E1CD; text-decoration:none; font-weight:600; font-size:17px;" style-hover="color:#FFD23F">Catering</a></li>
+            <li><a data-cursor href="#" style="color:#F7E1CD; text-decoration:none; font-weight:600; font-size:17px;" style-hover="color:#FFD23F">News</a></li>
+            <li><a data-cursor href="#" style="color:#F7E1CD; text-decoration:none; font-weight:600; font-size:17px;" style-hover="color:#FFD23F">Delivery</a></li>
+            <li><a data-cursor href="#" style="color:#F7E1CD; text-decoration:none; font-weight:600; font-size:17px;" style-hover="color:#FFD23F">Rewards</a></li>
+            <li><a data-cursor href="#" style="color:#F7E1CD; text-decoration:none; font-weight:600; font-size:17px;" style-hover="color:#FFD23F">Gift Cards</a></li>
+            <li><a data-cursor href="index.html#locations" style="color:#F7E1CD; text-decoration:none; font-weight:600; font-size:17px;" style-hover="color:#FFD23F">Locations</a></li>
+          </ul>
+        </div>
+
+        <div style="min-width:170px;">
+          <h4 style="font-family:'Luckiest Guy',cursive; color:#FFD23F; font-size:22px; letter-spacing:1px; margin:0 0 20px;">INQUIRIES</h4>
+          <ul style="list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:12px;">
+            <li><a data-cursor href="#" style="color:#F7E1CD; text-decoration:none; font-weight:600; font-size:17px;" style-hover="color:#FFD23F">Careers</a></li>
+            <li><a data-cursor href="#" style="color:#F7E1CD; text-decoration:none; font-weight:600; font-size:17px;" style-hover="color:#FFD23F">Deals</a></li>
+            <li><a data-cursor href="#" style="color:#F7E1CD; text-decoration:none; font-weight:600; font-size:17px;" style-hover="color:#FFD23F">Franchising</a></li>
+            <li><a data-cursor href="#" style="color:#F7E1CD; text-decoration:none; font-weight:600; font-size:17px;" style-hover="color:#FFD23F">FAQ</a></li>
+            <li><a data-cursor href="#" style="color:#F7E1CD; text-decoration:none; font-weight:600; font-size:17px;" style-hover="color:#FFD23F">Certified Angus Beef</a></li>
+            <li><a data-cursor href="#" style="color:#F7E1CD; text-decoration:none; font-weight:600; font-size:17px;" style-hover="color:#FFD23F">Supply Chain</a></li>
+            <li><a data-cursor href="#" style="color:#F7E1CD; text-decoration:none; font-weight:600; font-size:17px;" style-hover="color:#FFD23F">Contact</a></li>
+            <li><a data-cursor href="#" style="color:#F7E1CD; text-decoration:none; font-weight:600; font-size:17px;" style-hover="color:#FFD23F">$4.99 All-the-time Menu</a></li>
+          </ul>
+        </div>
+
+        <div style="min-width:240px;">
+          <h4 style="font-family:'Luckiest Guy',cursive; color:#FFD23F; font-size:22px; letter-spacing:1px; margin:0 0 20px;">DOWNLOAD OUR APP</h4>
+          <div style="display:flex; flex-direction:column; gap:14px; max-width:240px;">
+            <a data-cursor href="#" style="display:flex; align-items:center; gap:14px; background:#1A1410; color:#fff; text-decoration:none; padding:12px 22px; border-radius:14px;">
+              <span style="width:24px; height:26px; flex:none; clip-path:polygon(0 0, 100% 50%, 0 100%); background:#fff;"></span>
+              <span style="display:flex; flex-direction:column; line-height:1.1;"><span style="font-size:11px; letter-spacing:1px; opacity:.8;">GET IT ON</span><span style="font-size:20px; font-weight:700;">Google Play</span></span>
+            </a>
+            <a data-cursor href="#" style="display:flex; align-items:center; gap:14px; background:#1A1410; color:#fff; text-decoration:none; padding:12px 22px; border-radius:14px;">
+              <span style="width:24px; height:26px; flex:none; border-radius:50% 50% 50% 50% / 60% 60% 40% 40%; background:#fff; position:relative;"></span>
+              <span style="display:flex; flex-direction:column; line-height:1.1;"><span style="font-size:11px; letter-spacing:1px; opacity:.8;">Download on the</span><span style="font-size:20px; font-weight:700;">App Store</span></span>
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+      <div style="border-top:1px solid rgba(247,225,205,.25); margin-top:54px; padding-top:26px; display:flex; flex-wrap:wrap; gap:18px; justify-content:space-between; align-items:center;">
+        <div style="font-family:'Luckiest Guy',cursive; color:#F7E1CD; font-size:16px; letter-spacing:1px;">© 2026 SMASH BURGERS</div>
+        <p style="margin:0; max-width:760px; font-size:12px; line-height:1.5; color:rgba(247,225,205,.7); font-weight:400;">Apple and the Apple logo are trademarks of Apple Inc., registered in the U.S. and other countries. App Store is a service mark of Apple Inc., registered in the U.S. and other countries. Google Play and the Google Play logo are trademarks of Google Inc.</p>
+      </div>
+
+    </div>
+  </footer>
+
+</div>
+
+<script>
+(function () {
+  function boot() {
+    // style-hover -> :hover rules (mirrors the design runtime)
+    var sheet = document.createElement('style');
+    document.head.appendChild(sheet);
+    var n = 0;
+    document.querySelectorAll('[style-hover]').forEach(function (el) {
+      var css = el.getAttribute('style-hover');
+      if (!css) return;
+      var cls = 'scp' + (n++).toString(36);
+      el.classList.add(cls);
+      try { sheet.sheet.insertRule('.' + cls + ':hover{' + css + '}', sheet.sheet.cssRules.length); } catch (e) {}
+    });
+
+    /* ---------- EXPLODE-ON-HOVER MENU CARDS ---------- */
+    var isTouch = false;
+    try { isTouch = window.matchMedia('(hover: none)').matches; } catch (e) {}
+    var cards = [].slice.call(document.querySelectorAll('[data-card]'));
+    var backdrop = document.getElementById('backdrop');
+    var active = null;
+
+    function render() {
+      cards.forEach(function (card, i) {
+        if (!card._revealed) {
+          // springy pop-in handled when the card scrolls into view
+          card.style.transform = 'translateY(48px) scale(.92)';
+          card.style.opacity = '0';
+          return;
+        }
+        var isActive = active === i;
+        var dim = active !== null && active !== i;
+        card.style.transform = isActive ? 'scale(1.12)' : 'scale(1)';
+        card.style.opacity = dim ? '0.7' : '1';
+        card.style.boxShadow = isActive ? '0 30px 60px rgba(42,20,8,.30)' : '0 14px 30px rgba(42,20,8,.10)';
+        card.style.zIndex = isActive ? '10' : '1';
+        var def = card.querySelector('[data-def]');
+        var exp = card.querySelector('[data-exp]');
+        if (def) def.style.opacity = isActive ? '0' : '1';
+        if (exp) exp.style.opacity = isActive ? '1' : '0';
+      });
+      var on = isTouch && active !== null;
+      backdrop.style.opacity = on ? '1' : '0';
+      backdrop.style.pointerEvents = on ? 'auto' : 'none';
+    }
+
+    cards.forEach(function (card, i) {
+      card.addEventListener('mouseenter', function () { if (!isTouch) { active = i; render(); } });
+      card.addEventListener('mouseleave', function () { if (!isTouch) { active = null; render(); } });
+      card.addEventListener('click', function () { if (isTouch) { active = (active === i ? null : i); render(); } });
+    });
+    backdrop.addEventListener('click', function () { active = null; render(); });
+    render();
+
+    /* ---------- SPRING POP-IN ON SCROLL ---------- */
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (!en.isIntersecting) return;
+          var card = en.target;
+          var idx = cards.indexOf(card);
+          setTimeout(function () { card._revealed = true; render(); }, (idx % 3) * 120);
+          io.unobserve(card);
+        });
+      }, { threshold: 0.18 });
+      cards.forEach(function (c) { io.observe(c); });
+    } else {
+      cards.forEach(function (c) { c._revealed = true; });
+      render();
+    }
+
+    setupDrawer();
+    setupVeil();
+
+    /* ---------- CUSTOM CURSOR ---------- */
+    var fine = window.matchMedia && window.matchMedia('(hover:hover) and (pointer:fine)').matches;
+    if (!fine) return;
+    var ring = document.getElementById('cursorRing');
+    var dot = document.getElementById('cursorDot');
+    if (!ring || !dot) return;
+    var mx = window.innerWidth / 2, my = window.innerHeight / 2;
+    var rx = mx, ry = my, shown = false, onRed = false;
+
+    function getBgColor(x, y) {
+      var el = document.elementFromPoint(x, y);
+      var node = el;
+      while (node && node !== document.body) {
+        var bg = window.getComputedStyle(node).backgroundColor;
+        if (bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent') {
+          var m = bg.match(/\d+/g);
+          if (m) { var r = +m[0], g = +m[1], b = +m[2]; return (r > 150 && g < 60 && b < 60) ? 'yellow' : 'red'; }
+          break;
+        }
+        node = node.parentElement;
+      }
+      return 'red';
+    }
+    function applyColor(color) {
+      var c = color === 'yellow' ? '#FFD23F' : '#E8190B';
+      ring.style.borderColor = c; dot.style.background = c;
+    }
+    window.addEventListener('mousemove', function (e) {
+      mx = e.clientX; my = e.clientY;
+      dot.style.left = mx + 'px'; dot.style.top = my + 'px';
+      if (!shown) { shown = true; ring.style.opacity = '1'; dot.style.opacity = '1'; }
+      var color = getBgColor(mx, my);
+      onRed = (color === 'yellow');
+      applyColor(color);
+    });
+    document.addEventListener('mouseover', function (e) {
+      if (e.target.closest && e.target.closest('a,button,[data-cursor]')) {
+        ring.style.width = '70px'; ring.style.height = '70px';
+        ring.style.background = onRed ? 'rgba(255,210,63,.15)' : 'rgba(232,25,11,.12)';
+      }
+    });
+    document.addEventListener('mouseout', function (e) {
+      if (e.target.closest && e.target.closest('a,button,[data-cursor]')) {
+        ring.style.width = '40px'; ring.style.height = '40px'; ring.style.background = 'transparent';
+      }
+    });
+    (function loop() {
+      rx += (mx - rx) * 0.18; ry += (my - ry) * 0.18;
+      ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+      requestAnimationFrame(loop);
+    })();
+  }
+
+  /* ---------- MOBILE DRAWER ---------- */
+  function setupDrawer() {
+    var burger = document.getElementById('navBurger');
+    var drawer = document.getElementById('drawer');
+    var backdrop = document.getElementById('drawerBackdrop');
+    var closeBtn = document.getElementById('drawerClose');
+    if (!burger || !drawer || !backdrop) return;
+    var open = function () { drawer.classList.add('open'); backdrop.classList.add('open'); };
+    var close = function () { drawer.classList.remove('open'); backdrop.classList.remove('open'); };
+    burger.addEventListener('click', open);
+    backdrop.addEventListener('click', close);
+    if (closeBtn) closeBtn.addEventListener('click', close);
+    drawer.querySelectorAll('a').forEach(function (a) { a.addEventListener('click', close); });
+  }
+
+  /* ---------- FORWARD/BACKWARD VEIL PAGE TRANSITION ---------- */
+  function setupVeil() {
+    var veil = document.getElementById('veil');
+    if (!veil) return;
+    var dir = null;
+    try { dir = sessionStorage.getItem('smashNav'); sessionStorage.removeItem('smashNav'); } catch (e) {}
+
+    if (dir) {
+      // Reveal: veil starts covering, then wipes away in the direction of travel.
+      veil.classList.add('show-mark', dir === 'fwd' ? 'wipe-fwd' : 'wipe-back');
+      setTimeout(function () { veil.classList.remove('show-mark'); }, 450);
+    }
+
+    var cover = function (target, d) {
+      try { sessionStorage.setItem('smashNav', d); } catch (e) {}
+      // CSS animation slides the veil in and holds it (fill:forwards) until we navigate.
+      veil.classList.add('show-mark', d === 'fwd' ? 'cover-fwd' : 'cover-back');
+      setTimeout(function () { window.location.href = target; }, 520);
+    };
+    var intercept = function (sel, d) {
+      document.querySelectorAll(sel).forEach(function (a) {
+        a.addEventListener('click', function (e) {
+          if (e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
+          e.preventDefault();
+          cover(a.getAttribute('href'), d);
+        });
+      });
+    };
+    // menu.html: backward = returning to the home page
+    intercept('a[href^="index.html"]', 'back');
+  }
+
+  if (document.readyState !== 'loading') boot();
+  else document.addEventListener('DOMContentLoaded', boot);
+})();
+</script>
+</body>
+</html>

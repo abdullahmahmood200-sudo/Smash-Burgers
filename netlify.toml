@@ -1,0 +1,8 @@
+# Deploys the Next.js app in smash-next/ (the old static site lives in site/).
+[build]
+  base = "smash-next"
+  command = "npm run build"
+  publish = ".next"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

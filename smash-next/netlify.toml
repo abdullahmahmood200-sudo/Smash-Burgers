@@ -1,0 +1,8 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+# Netlify auto-installs the Next.js runtime, but pin it explicitly so the
+# App Router server + API route deploy as serverless functions.
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

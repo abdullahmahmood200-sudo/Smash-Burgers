@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SMASH Burgers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Luckiest+Guy&family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background:#F7E1CD; }
+  @media (hover:hover) and (pointer:fine){ body, a, button { cursor: none !important; } }
+  @keyframes bobLite { 0%{transform:translateY(0) rotate(var(--r,0deg))} 50%{transform:translateY(-14px) rotate(var(--r,0deg))} 100%{transform:translateY(0) rotate(var(--r,0deg))} }
+  @keyframes blink { 0%,92%,100%{transform:scaleY(1)} 96%{transform:scaleY(.1)} }
+  @keyframes wobble { 0%{transform:rotate(-3deg)} 50%{transform:rotate(3deg)} 100%{transform:rotate(-3deg)} }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+</head>
+<body>
+<div style="position:relative; width:100%; overflow-x:hidden; font-family:'Fredoka',sans-serif; color:#E8190B; background:#F7E1CD;">
+
+  <!-- ============ CUSTOM CURSOR ============ -->
+  <div id="cursorRing" style="position:fixed; left:0; top:0; width:40px; height:40px; border:2.5px solid #E8190B; border-radius:50%; pointer-events:none; z-index:99998; transform:translate(-50%,-50%); opacity:0; transition:opacity .35s ease, width .25s ease, height .25s ease, background .25s ease;"></div>
+  <div id="cursorDot" style="position:fixed; left:0; top:0; width:8px; height:8px; background:#E8190B; border-radius:50%; pointer-events:none; z-index:99999; transform:translate(-50%,-50%); opacity:0; transition:opacity .35s ease;"></div>
+
+  <!-- ============ LOADER ============ -->
+  <div id="loader" style="position:fixed; inset:0; z-index:90000; background:#E8190B; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:48px; transition:opacity .7s ease;">
+    <div style="font-family:'Luckiest Guy',cursive; font-size:clamp(26px,3vw,40px); color:#FFD23F; letter-spacing:3px; transform:rotate(-3deg); text-shadow:3px 3px 0 rgba(0,0,0,.18);">SMASH</div>
+
+    <div id="buildStage" style="position:relative; width:240px; height:200px;">
+      <!-- bottom bun -->
+      <div id="pcBun2" data-y="138" style="position:absolute; left:50%; top:0; width:200px; height:52px; background:linear-gradient(#ECA24A,#D9882F); border-radius:18px 18px 76px 76px; box-shadow:inset 0 -8px 0 rgba(0,0,0,.12), 0 8px 16px rgba(0,0,0,.2); transform:translate(-50%,-320px); opacity:0; transition:transform .6s cubic-bezier(.3,1.5,.5,1), opacity .35s ease;"></div>
+      <!-- patty -->
+      <div id="pcPatty" data-y="104" style="position:absolute; left:50%; top:0; width:184px; height:40px; background:linear-gradient(#6A3B20,#4A2611); border-radius:18px; box-shadow:inset 0 3px 0 rgba(255,255,255,.08), inset 0 -4px 0 rgba(0,0,0,.25), 0 6px 12px rgba(0,0,0,.2); transform:translate(-50%,-320px); opacity:0; transition:transform .6s cubic-bezier(.3,1.5,.5,1), opacity .35s ease;"></div>
+      <!-- cheese -->
+      <div id="pcCheese" data-y="88" style="position:absolute; left:50%; top:0; width:194px; height:24px; background:#FFC107; border-radius:5px; box-shadow:0 5px 10px rgba(0,0,0,.18); transform:translate(-50%,-320px) rotate(-2deg); opacity:0; transition:transform .6s cubic-bezier(.3,1.5,.5,1), opacity .35s ease;">
+        <div style="position:absolute; left:24px; bottom:-9px; width:16px; height:14px; background:#FFC107; border-radius:0 0 8px 8px;"></div>
+        <div style="position:absolute; right:40px; bottom:-12px; width:14px; height:17px; background:#FFC107; border-radius:0 0 7px 7px;"></div>
+      </div>
+      <!-- top bun -->
+      <div id="pcBun1" data-y="6" style="position:absolute; left:50%; top:0; width:202px; height:98px; background:linear-gradient(#F2B45C,#E59433); border-radius:101px 101px 26px 26px; box-shadow:inset 0 10px 0 rgba(255,255,255,.18), 0 8px 16px rgba(0,0,0,.2); transform:translate(-50%,-340px); opacity:0; transition:transform .6s cubic-bezier(.3,1.5,.5,1), opacity .35s ease;">
+        <div style="position:absolute; left:60px; top:30px; width:12px; height:7px; background:#FBE3B0; border-radius:50%; transform:rotate(-20deg);"></div>
+        <div style="position:absolute; left:104px; top:22px; width:12px; height:7px; background:#FBE3B0; border-radius:50%; transform:rotate(10deg);"></div>
+        <div style="position:absolute; left:132px; top:40px; width:12px; height:7px; background:#FBE3B0; border-radius:50%; transform:rotate(-8deg);"></div>
+      </div>
+    </div>
+
+    <div style="height:34px; display:flex; align-items:center; justify-content:center;">
+      <div id="loadText" style="font-family:'Luckiest Guy',cursive; font-size:clamp(18px,2.2vw,28px); color:#fff; letter-spacing:1px; opacity:0; transition:opacity .3s ease; text-align:center;">Searing the glazed patty…</div>
+    </div>
+  </div>
+
+  <!-- ============ NAV ============ -->
+  <nav id="nav" style="display:flex; align-items:center; justify-content:space-between; padding:26px 40px; position:relative; z-index:50;">
+    <div style="font-family:'Luckiest Guy',cursive; font-size:clamp(30px,3.2vw,48px); color:#E8190B; letter-spacing:1px; transform:rotate(-3deg); text-shadow:3px 3px 0 #fff;">SMASH</div>
+    <div style="display:flex; align-items:center; gap:14px;">
+      <a data-cursor href="#" style="font-family:'Luckiest Guy',cursive; font-size:clamp(13px,1.05vw,17px); letter-spacing:1px; color:#fff; background:#E8190B; padding:13px 28px; border-radius:40px; text-decoration:none;">SIGN IN</a>
+      <a data-cursor href="menu.html" style="display:inline-flex; align-items:center; gap:10px; font-family:'Luckiest Guy',cursive; font-size:clamp(13px,1.05vw,17px); letter-spacing:1px; color:#E8190B; background:transparent; padding:12px 24px; border-radius:40px; text-decoration:none; border:2px solid #E8190B; white-space:nowrap;">MENU<span style="display:inline-flex; flex-direction:column; justify-content:center; gap:3px;"><span style="display:block; width:17px; height:2.5px; background:#E8190B; border-radius:2px;"></span><span style="display:block; width:17px; height:2.5px; background:#E8190B; border-radius:2px;"></span><span style="display:block; width:17px; height:2.5px; background:#E8190B; border-radius:2px;"></span></span></a>
+    </div>
+  </nav>
+
+  <!-- ============ HERO ============ -->
+  <section style="position:relative; min-height:84vh; display:flex; align-items:center; justify-content:center; padding:0 24px 40px;">
+    <h1 id="heroTitle" style="font-family:'Lilita One',cursive; color:#FF1106; font-size:clamp(120px,23vw,420px); line-height:.8; margin:0; text-align:center; white-space:nowrap; letter-spacing:-.01em; transform:scale(.55); opacity:0; text-shadow:0 0 0 #fff, 6px 6px 0 rgba(255,255,255,.95), -4px -4px 0 #fff, 4px -4px 0 #fff, -4px 4px 0 #fff;">THE BURGER</h1>
+
+    <div id="heroBurger" style="position:absolute; left:50%; top:54%; width:clamp(320px,34vw,580px); transform:translate(-50%,calc(-50% + 80px)); opacity:0; transition:transform .9s cubic-bezier(.2,.8,.2,1), opacity .9s ease; z-index:20;">
+      <img src="assets/burger.png" alt="Smash burger" style="width:100%; display:block; filter:drop-shadow(0 26px 30px rgba(0,0,0,.28));">
+      <div style="position:absolute; left:30%; top:24%; width:clamp(34px,3.4vw,58px); height:clamp(34px,3.4vw,58px); background:#fff; border-radius:50%; clip-path:polygon(50% 50%, 100% 16%, 100% 0, 0 0, 0 100%, 100% 100%, 100% 84%); animation:blink 4.5s infinite;"></div>
+      <div style="position:absolute; left:54%; top:24%; width:clamp(34px,3.4vw,58px); height:clamp(34px,3.4vw,58px); background:#fff; border-radius:50%; clip-path:polygon(50% 50%, 100% 16%, 100% 0, 0 0, 0 100%, 100% 100%, 100% 84%); animation:blink 4.5s infinite .15s;"></div>
+    </div>
+
+    <div id="heroL" style="position:absolute; left:9%; top:26%; font-family:'Luckiest Guy',cursive; color:#fff; background:#F6A01C; font-size:clamp(18px,2vw,32px); line-height:.92; text-align:center; padding:14px 20px; border-radius:18px; transform:rotate(-13deg) translateY(40px); opacity:0; transition:transform .7s ease, opacity .7s ease; z-index:25; box-shadow:0 6px 0 rgba(0,0,0,.12);">SMASHED<br>FRESH</div>
+    <div id="heroR" style="position:absolute; right:9%; bottom:24%; font-family:'Luckiest Guy',cursive; color:#fff; background:#F6A01C; font-size:clamp(18px,2vw,32px); line-height:.92; text-align:center; padding:14px 20px; border-radius:18px; transform:rotate(11deg) translateY(40px); opacity:0; transition:transform .7s ease, opacity .7s ease; z-index:25; box-shadow:0 6px 0 rgba(0,0,0,.12);">BOLD<br>FLAVOR</div>
+  </section>
+
+  <!-- ============ INTRO ============ -->
+  <div style="display:flex; justify-content:space-between; gap:40px; padding:0 48px 90px; flex-wrap:wrap;">
+    <p style="max-width:440px; font-size:clamp(19px,1.5vw,27px); font-weight:600; color:#2A1408; line-height:1.25; margin:0;">Smashed hot on the flat-top, our prime patties lock in ultimate juiciness under a caramelized crust.</p>
+    <p style="max-width:440px; font-size:clamp(19px,1.5vw,27px); font-weight:600; color:#2A1408; line-height:1.25; margin:0; text-align:right;">Topped with melted cheddar and our signature chili honey glaze, crafted to satisfy cravings since 2008.</p>
+  </div>
+
+  <!-- ============ PICK YOUR FIGHTER ============ -->
+  <section id="flagships" style="position:relative; padding:18px 0 96px;">
+    <div style="display:flex; align-items:flex-end; justify-content:space-between; padding:0 48px 30px; gap:20px; flex-wrap:wrap;">
+      <h2 style="font-family:'Lilita One',cursive; color:#FF1106; font-size:clamp(54px,7vw,128px); line-height:.85; margin:0; letter-spacing:-.01em; text-shadow:4px 4px 0 #fff;">PICK YOUR<br>FIGHTER</h2>
+      <div style="display:flex; gap:14px; padding-bottom:10px;">
+        <button onclick="window.__cmp&&window.__cmp.scrollCards(-1)" aria-label="Previous" style="cursor:pointer; width:64px; height:64px; border-radius:50%; border:none; background:#E8190B; color:#fff; font-size:30px; font-family:'Fredoka',sans-serif; box-shadow:0 5px 0 rgba(0,0,0,.14);">‹</button>
+        <button onclick="window.__cmp&&window.__cmp.scrollCards(1)" aria-label="Next" style="cursor:pointer; width:64px; height:64px; border-radius:50%; border:none; background:#E8190B; color:#fff; font-size:30px; font-family:'Fredoka',sans-serif; box-shadow:0 5px 0 rgba(0,0,0,.14);">›</button>
+      </div>
+    </div>
+    <div id="flagship-scroller" style="display:flex; gap:32px; overflow-x:auto; scroll-snap-type:x mandatory; padding:10px 48px 30px; scroll-padding-left:48px; scrollbar-width:none; -ms-overflow-style:none;">
+
+      <!-- CARD 1 -->
+      <article data-card style="scroll-snap-align:start; flex:0 0 auto; width:min(78vw,1040px); background:#FCEFD9; border-radius:34px; overflow:hidden; box-shadow:0 18px 40px rgba(42,20,8,.12);">
+        <div style="position:relative;">
+          <img src="assets/flagship-1.png" alt="The Triple Stack" style="width:100%; height:clamp(280px,42vh,520px); object-fit:cover; display:block;">
+          <div style="position:absolute; top:24px; left:24px; font-family:'Luckiest Guy',cursive; color:#fff; background:#F6A01C; font-size:clamp(15px,1.4vw,22px); letter-spacing:1px; padding:10px 20px; border-radius:40px; transform:rotate(-4deg); box-shadow:0 5px 0 rgba(0,0,0,.12);">FAN FAVORITE</div>
+        </div>
+        <div style="padding:34px 40px 40px;">
+          <div style="display:flex; align-items:baseline; justify-content:space-between; gap:20px; flex-wrap:wrap;">
+            <h3 style="font-family:'Lilita One',cursive; color:#FF1106; font-size:clamp(40px,4.4vw,84px); line-height:.9; margin:0; letter-spacing:-.01em;">THE TRIPLE STACK</h3>
+            <span style="font-family:'Lilita One',cursive; color:#E8190B; font-size:clamp(34px,3.4vw,62px); line-height:.9;">$14</span>
+          </div>
+          <p style="font-size:clamp(19px,1.5vw,26px); font-weight:600; color:#2A1408; line-height:1.25; margin:18px 0 28px;">Three smashed patties, double cheddar, signature smash sauce. Zero mercy.</p>
+          <a data-cursor href="#" style="display:inline-block; font-family:'Luckiest Guy',cursive; color:#fff; background:#E8190B; font-size:clamp(18px,1.5vw,24px); letter-spacing:1px; padding:20px 50px; border-radius:50px; text-decoration:none; box-shadow:0 6px 0 rgba(0,0,0,.14);">ORDER NOW</a>
+        </div>
+      </article>
+
+      <!-- CARD 2 -->
+      <article data-card style="scroll-snap-align:start; flex:0 0 auto; width:min(78vw,1040px); background:#FCEFD9; border-radius:34px; overflow:hidden; box-shadow:0 18px 40px rgba(42,20,8,.12);">
+        <div style="position:relative;">
+          <img src="assets/flagship-2.png" alt="The Cocoa Riot" style="width:100%; height:clamp(280px,42vh,520px); object-fit:cover; object-position:center 30%; display:block;">
+          <div style="position:absolute; top:24px; left:24px; font-family:'Luckiest Guy',cursive; color:#fff; background:#F6A01C; font-size:clamp(15px,1.4vw,22px); letter-spacing:1px; padding:10px 20px; border-radius:40px; transform:rotate(-4deg); box-shadow:0 5px 0 rgba(0,0,0,.12);">NEW DROP</div>
+        </div>
+        <div style="padding:34px 40px 40px;">
+          <div style="display:flex; align-items:baseline; justify-content:space-between; gap:20px; flex-wrap:wrap;">
+            <h3 style="font-family:'Lilita One',cursive; color:#FF1106; font-size:clamp(40px,4.4vw,84px); line-height:.9; margin:0; letter-spacing:-.01em;">THE COCOA RIOT</h3>
+            <span style="font-family:'Lilita One',cursive; color:#E8190B; font-size:clamp(34px,3.4vw,62px); line-height:.9;">$16</span>
+          </div>
+          <p style="font-size:clamp(19px,1.5vw,26px); font-weight:600; color:#2A1408; line-height:1.25; margin:18px 0 28px;">Cocoa lattice bun, smoked beef, herb crema, molten cheddar. Yeah, we went there.</p>
+          <a data-cursor href="#" style="display:inline-block; font-family:'Luckiest Guy',cursive; color:#fff; background:#E8190B; font-size:clamp(18px,1.5vw,24px); letter-spacing:1px; padding:20px 50px; border-radius:50px; text-decoration:none; box-shadow:0 6px 0 rgba(0,0,0,.14);">ORDER NOW</a>
+        </div>
+      </article>
+
+      <!-- CARD 3 -->
+      <article data-card style="scroll-snap-align:start; flex:0 0 auto; width:min(78vw,1040px); background:#FCEFD9; border-radius:34px; overflow:hidden; box-shadow:0 18px 40px rgba(42,20,8,.12);">
+        <div style="position:relative;">
+          <img src="assets/flagship-3.png" alt="The Rye Rebel" style="width:100%; height:clamp(280px,42vh,520px); object-fit:cover; object-position:center 35%; display:block;">
+          <div style="position:absolute; top:24px; left:24px; font-family:'Luckiest Guy',cursive; color:#fff; background:#F6A01C; font-size:clamp(15px,1.4vw,22px); letter-spacing:1px; padding:10px 20px; border-radius:40px; transform:rotate(-4deg); box-shadow:0 5px 0 rgba(0,0,0,.12);">LIMITED</div>
+        </div>
+        <div style="padding:34px 40px 40px;">
+          <div style="display:flex; align-items:baseline; justify-content:space-between; gap:20px; flex-wrap:wrap;">
+            <h3 style="font-family:'Lilita One',cursive; color:#FF1106; font-size:clamp(40px,4.4vw,84px); line-height:.9; margin:0; letter-spacing:-.01em;">THE RYE REBEL</h3>
+            <span style="font-family:'Lilita One',cursive; color:#E8190B; font-size:clamp(34px,3.4vw,62px); line-height:.9;">$13</span>
+          </div>
+          <p style="font-size:clamp(19px,1.5vw,26px); font-weight:600; color:#2A1408; line-height:1.25; margin:18px 0 28px;">Dark rye bun, crispy bacon, pickled red onion, sharp cheddar drip. Built loud.</p>
+          <a data-cursor href="#" style="display:inline-block; font-family:'Luckiest Guy',cursive; color:#fff; background:#E8190B; font-size:clamp(18px,1.5vw,24px); letter-spacing:1px; padding:20px 50px; border-radius:50px; text-decoration:none; box-shadow:0 6px 0 rgba(0,0,0,.14);">ORDER NOW</a>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ============ PARALLAX FLOATING INGREDIENTS ============ -->
+  <section id="flagship" data-floatwrap style="position:relative; overflow:hidden; padding:60px 24px 140px;">
+
+    <!-- floaters: left side -->
+    <div data-float data-dir="l" data-speed="1.4" style="position:absolute; left:4%; top:10%; z-index:2;"><div style="width:74px;height:74px;border-radius:50%;background:#E23B2E;box-shadow:inset 0 0 0 8px #C32A1E, inset 0 0 0 12px #F1655A;"></div></div>
+    <div data-float data-dir="l" data-speed="2.1" style="position:absolute; left:8%; top:44%; z-index:2;"><div style="--r:14deg; width:64px;height:64px;border-radius:13px;background:#FFC200;box-shadow:inset 0 0 0 6px #E0A700;transform:rotate(14deg);animation:bobLite 6s ease-in-out infinite;"></div></div>
+    <div data-float data-dir="l" data-speed="1.1" style="position:absolute; left:3%; bottom:14%; z-index:2;"><div style="width:96px;height:60px;border-radius:60% 60% 70% 70% / 80% 80% 50% 50%;background:#4FAE2E;box-shadow:inset 0 -8px 0 rgba(0,0,0,.08);"></div></div>
+    <div data-float data-dir="l" data-speed="2.6" style="position:absolute; left:14%; top:74%; z-index:2;"><div style="width:78px;height:30px;border-radius:16px;background:linear-gradient(#6A3B20,#4A2611);box-shadow:inset 0 -4px 0 rgba(0,0,0,.25);"></div></div>
+
+    <!-- floaters: right side -->
+    <div data-float data-dir="r" data-speed="1.7" style="position:absolute; right:5%; top:8%; z-index:2;"><div style="--r:-10deg; width:70px;height:70px;border-radius:50%;background:transparent;border:11px solid #D98BB4;box-shadow:inset 0 0 0 4px #B86A95;animation:bobLite 7s ease-in-out infinite;"></div></div>
+    <div data-float data-dir="r" data-speed="1.2" style="position:absolute; right:9%; top:42%; z-index:2;"><div style="width:64px;height:64px;border-radius:50%;background:#E23B2E;box-shadow:inset 0 0 0 8px #C32A1E, inset 0 0 0 12px #F1655A;"></div></div>
+    <div data-float data-dir="r" data-speed="2.3" style="position:absolute; right:4%; bottom:18%; z-index:2;"><div style="--r:-16deg; width:60px;height:60px;border-radius:13px;background:#FFC200;box-shadow:inset 0 0 0 6px #E0A700;transform:rotate(-16deg);animation:bobLite 5.5s ease-in-out infinite;"></div></div>
+    <div data-float data-dir="r" data-speed="1.5" style="position:absolute; right:13%; top:72%; z-index:2;"><div style="width:84px;height:52px;border-radius:60% 60% 70% 70% / 80% 80% 50% 50%;background:#4FAE2E;"></div></div>
+
+    <div style="position:relative; z-index:5; text-align:center; max-width:980px; margin:0 auto;">
+      <h2 style="font-family:'Lilita One',cursive; color:#FF1106; font-size:clamp(64px,12vw,210px); line-height:.84; margin:0; letter-spacing:-.01em; text-shadow:5px 5px 0 #fff, -3px -3px 0 #fff, 3px -3px 0 #fff, -3px 3px 0 #fff;">THE BUILD</h2>
+      <p style="font-size:clamp(20px,1.7vw,30px); font-weight:600; color:#2A1408; line-height:1.3; margin:30px auto 0; max-width:640px;">No shortcuts. No freezer. Just a screaming-hot flat-top, fresh beef, and a bun that can take the heat — stacked layer by layer.</p>
+      <a data-cursor href="#travels" style="display:inline-block; margin-top:46px; font-family:'Luckiest Guy',cursive; color:#fff; background:#E8190B; font-size:clamp(20px,1.8vw,30px); letter-spacing:1px; padding:26px 70px; border-radius:60px; text-decoration:none; box-shadow:0 8px 0 rgba(0,0,0,.14);">BUILD YOURS</a>
+    </div>
+  </section>
+
+  <!-- ============ YELLOW SECTION: MAP PATH + PLANE ============ -->
+  <section id="travels" style="position:relative; background:#FFC600; padding:96px 24px 120px; overflow:hidden;">
+    <div style="text-align:center; max-width:1000px; margin:0 auto;">
+      <div style="font-family:'Luckiest Guy',cursive; color:#E8190B; font-size:clamp(16px,1.8vw,26px); letter-spacing:2px;">HOT &amp; DELIVERED</div>
+      <h2 style="font-family:'Lilita One',cursive; color:#1F1206; font-size:clamp(48px,8.2vw,150px); line-height:.86; margin:12px 0 0; letter-spacing:-.01em; text-shadow:4px 4px 0 #fff;">QUALITY THAT<br>TRAVELS WITH YOU</h2>
+      <p style="font-size:clamp(18px,1.6vw,28px); font-weight:600; color:#5A3A12; line-height:1.3; margin:26px auto 0; max-width:620px;">From our flat-top to your door — every smash arrives as fresh as the second it left the grill.</p>
+    </div>
+
+    <div id="routeWrap" style="position:relative; max-width:1200px; margin:64px auto 0;">
+      <svg viewBox="0 0 1200 380" style="width:100%; height:auto; overflow:visible; display:block;">
+        <path id="routePath" d="M50,330 C 230,330 250,90 470,110 C 650,126 660,300 840,250 C 980,212 1010,70 1150,120" fill="none" stroke="#C28A00" stroke-width="5" stroke-dasharray="2 20" stroke-linecap="round"></path>
+        <path id="routeProg" d="M50,330 C 230,330 250,90 470,110 C 650,126 660,300 840,250 C 980,212 1010,70 1150,120" fill="none" stroke="#E8190B" stroke-width="7" stroke-linecap="round"></path>
+        <circle cx="50" cy="330" r="13" fill="#E8190B" stroke="#fff" stroke-width="4"></circle>
+        <circle cx="1150" cy="120" r="13" fill="#fff" stroke="#E8190B" stroke-width="5"></circle>
+        <g id="plane" transform="translate(50,330)">
+          <circle r="26" fill="#fff"></circle>
+          <polygon points="-13,-9 16,0 -13,9 -6,0" fill="#E8190B"></polygon>
+          <polygon points="-13,9 16,0 -6,0" fill="#B11208"></polygon>
+        </g>
+      </svg>
+      <div style="display:flex; justify-content:space-between; max-width:1150px; margin:6px auto 0; padding:0 10px;">
+        <div style="font-family:'Luckiest Guy',cursive; color:#1F1206; font-size:clamp(16px,1.5vw,24px);">OUR KITCHEN</div>
+        <div style="font-family:'Luckiest Guy',cursive; color:#1F1206; font-size:clamp(16px,1.5vw,24px);">YOUR DOOR</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ STICKER PEEL ============ -->
+  <section style="position:relative; padding:120px 24px; display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:70px;">
+    <div style="max-width:460px;">
+      <div style="font-family:'Luckiest Guy',cursive; color:#F6A01C; font-size:clamp(16px,1.6vw,24px); letter-spacing:2px;">PEEL &amp; STICK</div>
+      <h2 style="font-family:'Lilita One',cursive; color:#FF1106; font-size:clamp(48px,6vw,96px); line-height:.86; margin:10px 0 0; letter-spacing:-.01em; text-shadow:3px 3px 0 #fff;">CERTIFIED<br>SMASH FAN</h2>
+      <p style="font-size:clamp(18px,1.5vw,26px); font-weight:600; color:#2A1408; line-height:1.3; margin:24px 0 0;">Slap one on your laptop, your truck, your forehead. Every order ships with a fresh batch of stickers — peel a corner and see.</p>
+    </div>
+
+    <div id="stickerWrap" style="position:relative; width:340px; height:340px; flex:none;">
+      <div id="stickerBack" style="position:absolute; right:0; bottom:0; width:120px; height:120px; background:linear-gradient(135deg,#c9c0b0,#efe7d8); border-radius:0 0 28px 0; transform-origin:bottom right; transform:rotate(0deg); box-shadow:0 -2px 14px rgba(0,0,0,.18); z-index:1;"></div>
+      <div id="stickerFront" style="position:absolute; inset:0; background:#E8190B; border:9px solid #fff; border-radius:28px; box-shadow:0 22px 44px rgba(42,20,8,.26); transform:rotate(-4deg); transition:transform .4s cubic-bezier(.34,1.4,.5,1), clip-path .4s ease; clip-path:polygon(0 0, 100% 0, 100% 78%, 78% 100%, 0 100%); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; overflow:hidden;" style-hover="transform:rotate(-4deg) scale(1.03)">
+        <div style="font-family:'Luckiest Guy',cursive; color:#FFD23F; font-size:46px; letter-spacing:1px; text-shadow:3px 3px 0 rgba(0,0,0,.18); transform:rotate(-3deg);">SMASH</div>
+        <div style="width:120px; height:120px;">
+          <img src="assets/burger.png" alt="" style="width:100%; display:block; filter:drop-shadow(0 8px 10px rgba(0,0,0,.3));">
+        </div>
+        <div style="font-family:'Fredoka',sans-serif; font-weight:700; color:#fff; font-size:18px; letter-spacing:3px;">EST. 2008</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ON THE ROAD ============ -->
+  <section id="locations" style="position:relative; padding:70px 32px 130px;">
+    <div style="text-align:center; max-width:900px; margin:0 auto;">
+      <div style="font-family:'Luckiest Guy',cursive; color:#F6A01C; font-size:clamp(18px,2vw,30px); letter-spacing:2px; text-shadow:2px 2px 0 #fff;">HOT &amp; DELIVERED</div>
+      <h2 style="font-family:'Lilita One',cursive; color:#FF1106; font-size:clamp(64px,11vw,190px); line-height:.84; margin:10px 0 0; letter-spacing:-.01em; text-shadow:5px 5px 0 #fff, -3px -3px 0 #fff, 3px -3px 0 #fff, -3px 3px 0 #fff;">ON THE ROAD</h2>
+      <p style="font-size:clamp(18px,1.6vw,28px); font-weight:600; color:#2A1408; line-height:1.3; margin:24px auto 0; max-width:600px;">Four cities, one obsession. Scroll and ride along as the SMASH truck makes its delivery run.</p>
+    </div>
+
+    <div id="route" style="position:relative; max-width:1000px; margin:70px auto 0;">
+
+      <!-- rail -->
+      <div style="position:absolute; left:30px; top:0; bottom:0; width:14px; transform:translateX(-50%); background:#2A1408; border-radius:10px; z-index:1;">
+        <div style="position:absolute; left:50%; top:0; bottom:0; width:3px; transform:translateX(-50%); background:repeating-linear-gradient(to bottom,#FFC200 0 13px, transparent 13px 28px);"></div>
+      </div>
+
+      <!-- truck -->
+      <div id="truck" style="position:absolute; left:30px; top:0; z-index:30; will-change:transform;">
+        <div id="truck-dust" style="position:absolute; left:-22px; top:50%; transform:translateY(-50%); width:34px; height:34px; border-radius:50%; background:rgba(140,120,90,.55); filter:blur(7px); opacity:0;"></div>
+        <div style="position:relative; width:118px; height:80px;">
+          <div style="position:absolute; left:10px; bottom:-2px; width:98px; height:14px; border-radius:50%; background:rgba(0,0,0,.18); filter:blur(4px);"></div>
+          <div style="position:absolute; left:0; top:8px; width:74px; height:50px; background:#E8190B; border-radius:10px; box-shadow:inset 0 0 0 3px #fff;"></div>
+          <div style="position:absolute; left:4px; top:24px; width:66px; text-align:center; font-family:'Luckiest Guy',cursive; color:#FFC200; font-size:15px; letter-spacing:1px;">SMASH</div>
+          <div style="position:absolute; left:72px; top:22px; width:34px; height:36px; background:#F6A01C; border-radius:8px 13px 8px 8px;"></div>
+          <div style="position:absolute; left:78px; top:26px; width:22px; height:15px; background:#FCEFD9; border-radius:5px;"></div>
+          <div style="position:absolute; left:104px; top:44px; width:7px; height:7px; border-radius:50%; background:#FFE08A;"></div>
+          <div style="position:absolute; left:16px; top:52px; width:22px; height:22px; border-radius:50%; background:#23150C; box-shadow:inset 0 0 0 5px #C9CDD2;"></div>
+          <div style="position:absolute; left:74px; top:52px; width:22px; height:22px; border-radius:50%; background:#23150C; box-shadow:inset 0 0 0 5px #C9CDD2;"></div>
+        </div>
+      </div>
+
+      <!-- STOP 1 -->
+      <div data-stop style="position:relative; padding-left:84px; margin-bottom:50px;">
+        <div data-marker style="position:absolute; left:30px; top:50%; width:30px; height:30px; border-radius:50%; background:#FFC200; border:5px solid #E8190B; transform:translate(-50%,-50%); z-index:15; transition:transform .25s ease, background .25s ease;"></div>
+        <div style="display:flex; flex-wrap:wrap; background:#FCEFD9; border-radius:26px; overflow:hidden; box-shadow:0 14px 34px rgba(42,20,8,.12);" style-hover="transform:translateY(-6px); box-shadow:0 24px 46px rgba(42,20,8,.2)">
+          <img src="assets/loc-california.jpg" alt="Los Angeles" style="flex:1 1 220px; min-width:220px; min-height:240px; object-fit:cover; align-self:stretch;">
+          <div style="flex:1 1 300px; padding:30px 34px;">
+            <div style="font-family:'Luckiest Guy',cursive; color:#F6A01C; font-size:15px; letter-spacing:2px;">CALIFORNIA</div>
+            <h3 style="font-family:'Lilita One',cursive; color:#FF1106; font-size:clamp(30px,3vw,50px); line-height:.9; margin:4px 0 16px; letter-spacing:-.01em;">Los Angeles</h3>
+            <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:22px;">
+              <div style="font-weight:600; color:#2A1408; font-size:17px;">742 S Grand Ave, Los Angeles, CA 90017</div>
+              <div style="font-weight:600; color:#2A1408; font-size:17px;">(213) 555-0142</div>
+              <div style="font-weight:600; color:#7A5C3E; font-size:15px;">Open daily · 11am – 11pm</div>
+            </div>
+            <a data-cursor href="#" style="display:inline-block; font-family:'Luckiest Guy',cursive; color:#fff; background:#E8190B; font-size:16px; letter-spacing:1px; padding:14px 36px; border-radius:40px; text-decoration:none; box-shadow:0 5px 0 rgba(0,0,0,.14);">ORDER NOW</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- STOP 2 -->
+      <div data-stop style="position:relative; padding-left:84px; margin-bottom:50px;">
+        <div data-marker style="position:absolute; left:30px; top:50%; width:30px; height:30px; border-radius:50%; background:#FFC200; border:5px solid #E8190B; transform:translate(-50%,-50%); z-index:15; transition:transform .25s ease, background .25s ease;"></div>
+        <div style="display:flex; flex-direction:row-reverse; flex-wrap:wrap; background:#FCEFD9; border-radius:26px; overflow:hidden; box-shadow:0 14px 34px rgba(42,20,8,.12);" style-hover="transform:translateY(-6px); box-shadow:0 24px 46px rgba(42,20,8,.2)">
+          <img src="assets/loc-pennsylvania.jpg" alt="Philadelphia" style="flex:1 1 220px; min-width:220px; min-height:240px; object-fit:cover; align-self:stretch;">
+          <div style="flex:1 1 300px; padding:30px 34px;">
+            <div style="font-family:'Luckiest Guy',cursive; color:#F6A01C; font-size:15px; letter-spacing:2px;">PENNSYLVANIA</div>
+            <h3 style="font-family:'Lilita One',cursive; color:#FF1106; font-size:clamp(30px,3vw,50px); line-height:.9; margin:4px 0 16px; letter-spacing:-.01em;">Philadelphia</h3>
+            <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:22px;">
+              <div style="font-weight:600; color:#2A1408; font-size:17px;">1528 Walnut St, Philadelphia, PA 19102</div>
+              <div style="font-weight:600; color:#2A1408; font-size:17px;">(215) 555-0178</div>
+              <div style="font-weight:600; color:#7A5C3E; font-size:15px;">Open daily · 11am – 12am</div>
+            </div>
+            <a data-cursor href="#" style="display:inline-block; font-family:'Luckiest Guy',cursive; color:#fff; background:#E8190B; font-size:16px; letter-spacing:1px; padding:14px 36px; border-radius:40px; text-decoration:none; box-shadow:0 5px 0 rgba(0,0,0,.14);">ORDER NOW</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- STOP 3 -->
+      <div data-stop style="position:relative; padding-left:84px; margin-bottom:50px;">
+        <div data-marker style="position:absolute; left:30px; top:50%; width:30px; height:30px; border-radius:50%; background:#FFC200; border:5px solid #E8190B; transform:translate(-50%,-50%); z-index:15; transition:transform .25s ease, background .25s ease;"></div>
+        <div style="display:flex; flex-wrap:wrap; background:#FCEFD9; border-radius:26px; overflow:hidden; box-shadow:0 14px 34px rgba(42,20,8,.12);" style-hover="transform:translateY(-6px); box-shadow:0 24px 46px rgba(42,20,8,.2)">
+          <img src="assets/loc-texas.jpg" alt="Austin" style="flex:1 1 220px; min-width:220px; min-height:240px; object-fit:cover; align-self:stretch;">
+          <div style="flex:1 1 300px; padding:30px 34px;">
+            <div style="font-family:'Luckiest Guy',cursive; color:#F6A01C; font-size:15px; letter-spacing:2px;">TEXAS</div>
+            <h3 style="font-family:'Lilita One',cursive; color:#FF1106; font-size:clamp(30px,3vw,50px); line-height:.9; margin:4px 0 16px; letter-spacing:-.01em;">Austin</h3>
+            <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:22px;">
+              <div style="font-weight:600; color:#2A1408; font-size:17px;">219 W 4th St, Austin, TX 78701</div>
+              <div style="font-weight:600; color:#2A1408; font-size:17px;">(512) 555-0196</div>
+              <div style="font-weight:600; color:#7A5C3E; font-size:15px;">Open daily · 11am – 1am</div>
+            </div>
+            <a data-cursor href="#" style="display:inline-block; font-family:'Luckiest Guy',cursive; color:#fff; background:#E8190B; font-size:16px; letter-spacing:1px; padding:14px 36px; border-radius:40px; text-decoration:none; box-shadow:0 5px 0 rgba(0,0,0,.14);">ORDER NOW</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- STOP 4 -->
+      <div data-stop style="position:relative; padding-left:84px; margin-bottom:10px;">
+        <div data-marker style="position:absolute; left:30px; top:50%; width:30px; height:30px; border-radius:50%; background:#FFC200; border:5px solid #E8190B; transform:translate(-50%,-50%); z-index:15; transition:transform .25s ease, background .25s ease;"></div>
+        <div style="display:flex; flex-direction:row-reverse; flex-wrap:wrap; background:#FCEFD9; border-radius:26px; overflow:hidden; box-shadow:0 14px 34px rgba(42,20,8,.12);" style-hover="transform:translateY(-6px); box-shadow:0 24px 46px rgba(42,20,8,.2)">
+          <img src="assets/loc-newyork.jpg" alt="New York City" style="flex:1 1 220px; min-width:220px; min-height:240px; object-fit:cover; align-self:stretch;">
+          <div style="flex:1 1 300px; padding:30px 34px;">
+            <div style="font-family:'Luckiest Guy',cursive; color:#F6A01C; font-size:15px; letter-spacing:2px;">NEW YORK</div>
+            <h3 style="font-family:'Lilita One',cursive; color:#FF1106; font-size:clamp(30px,3vw,50px); line-height:.9; margin:4px 0 16px; letter-spacing:-.01em;">New York City</h3>
+            <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:22px;">
+              <div style="font-weight:600; color:#2A1408; font-size:17px;">88 University Pl, New York, NY 10003</div>
+              <div style="font-weight:600; color:#2A1408; font-size:17px;">(212) 555-0110</div>
+              <div style="font-weight:600; color:#7A5C3E; font-size:15px;">Open daily · 10:30am – 2am</div>
+            </div>
+            <a data-cursor href="#" style="display:inline-block; font-family:'Luckiest Guy',cursive; color:#fff; background:#E8190B; font-size:16px; letter-spacing:1px; padding:14px 36px; border-radius:40px; text-decoration:none; box-shadow:0 5px 0 rgba(0,0,0,.14);">ORDER NOW</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ HANGING FOOTER ============ -->
+  <footer style="position:relative; background:#E8190B; color:#F7E1CD; padding:30px 40px 0; overflow:hidden;">
+
+    <!-- hangers -->
+    <div style="position:relative; height:230px; max-width:1200px; margin:0 auto;">
+      <div style="position:absolute; left:0; right:0; top:0; height:5px; background:rgba(255,255,255,.25); border-radius:3px;"></div>
+
+      <div style="position:absolute; left:10%; top:0;"><div data-pivot style="transform-origin:top center;"><div style="width:2px; height:96px; background:rgba(255,255,255,.5); margin:0 auto;"></div><div style="width:70px;height:70px;border-radius:50%;background:#E23B2E;box-shadow:inset 0 0 0 8px #C32A1E, inset 0 0 0 12px #F1655A;"></div></div></div>
+
+      <div style="position:absolute; left:28%; top:0;"><div data-pivot style="transform-origin:top center;"><div style="width:2px; height:140px; background:rgba(255,255,255,.5); margin:0 auto;"></div><div style="--r:14deg; width:64px;height:64px;border-radius:13px;background:#FFC200;box-shadow:inset 0 0 0 6px #E0A700;transform:rotate(14deg);"></div></div></div>
+
+      <div style="position:absolute; left:46%; top:0;"><div data-pivot style="transform-origin:top center;"><div style="width:2px; height:80px; background:rgba(255,255,255,.5); margin:0 auto;"></div><div style="width:92px;height:58px;border-radius:60% 60% 70% 70% / 80% 80% 50% 50%;background:#4FAE2E;box-shadow:inset 0 -8px 0 rgba(0,0,0,.1);"></div></div></div>
+
+      <div style="position:absolute; left:64%; top:0;"><div data-pivot style="transform-origin:top center;"><div style="width:2px; height:120px; background:rgba(255,255,255,.5); margin:0 auto;"></div><div style="width:84px;height:32px;border-radius:16px;background:linear-gradient(#6A3B20,#4A2611);box-shadow:inset 0 -4px 0 rgba(0,0,0,.25);"></div></div></div>
+
+      <div style="position:absolute; left:84%; top:0;"><div data-pivot style="transform-origin:top center;"><div style="width:2px; height:104px; background:rgba(255,255,255,.5); margin:0 auto;"></div><div style="width:66px;height:66px;border-radius:50%;background:transparent;border:11px solid #D98BB4;box-shadow:inset 0 0 0 4px #B86A95;"></div></div></div>
+    </div>
+
+    <!-- footer columns -->
+    <div style="max-width:1200px; margin:0 auto; padding:20px 0 0; display:flex; flex-wrap:wrap; gap:48px 60px; justify-content:space-between;">
+
+      <div style="min-width:170px;">
+        <h4 style="font-family:'Luckiest Guy',cursive; color:#FFD23F; font-size:22px; letter-spacing:1px; margin:0 0 20px;">HELPFUL LINKS</h4>
+        <ul style="list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:12px;">
+          <li><a data-cursor href="#" style="color:#F7E1CD; text-decoration:none; font-weight:600; font-size:17px;" style-hover="color:#FFD23F">About Us</a></li>
+          <li><a data-cursor href="#" style="color:#F7E1CD; text-decoration:none; font-weight:600; font-size:17px;" style-hover="color:#FFD23F">Our Food</a></li>
+          <li><a data-cursor href="#" style="color:#F7E1CD; text-decoration:none; font-weight:600; font-size:17px;" style-hover="color:#FFD23F">Catering</a></li>
+          <li><a data-cursor href="#" style="color:#F7E1CD; text-decoration:none; font-weight:600; font-size:17px;" style-hover="color:#FFD23F">News</a></li>
+          <li><a data-cursor href="#" style="color:#F7E1CD; text-decoration:none; font-weight:600; font-size:17px;" style-hover="color:#FFD23F">Delivery</a></li>
+          <li><a data-cursor href="#" style="color:#F7E1CD; text-decoration:none; font-weight:600; font-size:17px;" style-hover="color:#FFD23F">Rewards</a></li>
+          <li><a data-cursor href="#" style="color:#F7E1CD; text-decoration:none; font-weight:600; font-size:17px;" style-hover="color:#FFD23F">Gift Cards</a></li>
+          <li><a data-cursor href="#locations" style="color:#F7E1CD; text-decoration:none; font-weight:600; font-size:17px;" style-hover="color:#FFD23F">Locations</a></li>
+        </ul>
+      </div>
+
+      <div style="min-width:170px;">
+        <h4 style="font-family:'Luckiest Guy',cursive; color:#FFD23F; font-size:22px; letter-spacing:1px; margin:0 0 20px;">INQUIRIES</h4>
+        <ul style="list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:12px;">
+          <li><a data-cursor href="#" style="color:#F7E1CD; text-decoration:none; font-weight:600; font-size:17px;" style-hover="color:#FFD23F">Careers</a></li>
+          <li><a data-cursor href="#" style="color:#F7E1CD; text-decoration:none; font-weight:600; font-size:17px;" style-hover="color:#FFD23F">Deals</a></li>
+          <li><a data-cursor href="#" style="color:#F7E1CD; text-decoration:none; font-weight:600; font-size:17px;" style-hover="color:#FFD23F">Franchising</a></li>
+          <li><a data-cursor href="#" style="color:#F7E1CD; text-decoration:none; font-weight:600; font-size:17px;" style-hover="color:#FFD23F">FAQ</a></li>
+          <li><a data-cursor href="#" style="color:#F7E1CD; text-decoration:none; font-weight:600; font-size:17px;" style-hover="color:#FFD23F">Certified Angus Beef</a></li>
+          <li><a data-cursor href="#" style="color:#F7E1CD; text-decoration:none; font-weight:600; font-size:17px;" style-hover="color:#FFD23F">Supply Chain</a></li>
+          <li><a data-cursor href="#" style="color:#F7E1CD; text-decoration:none; font-weight:600; font-size:17px;" style-hover="color:#FFD23F">Contact</a></li>
+          <li><a data-cursor href="#" style="color:#F7E1CD; text-decoration:none; font-weight:600; font-size:17px;" style-hover="color:#FFD23F">$4.99 All-the-time Menu</a></li>
+        </ul>
+      </div>
+
+      <div style="min-width:240px;">
+        <h4 style="font-family:'Luckiest Guy',cursive; color:#FFD23F; font-size:22px; letter-spacing:1px; margin:0 0 20px;">DOWNLOAD OUR APP</h4>
+        <div style="display:flex; flex-direction:column; gap:14px; max-width:240px;">
+          <a data-cursor href="#" style="display:flex; align-items:center; gap:14px; background:#1A1410; color:#fff; text-decoration:none; padding:12px 22px; border-radius:14px;">
+            <span style="width:24px; height:26px; flex:none; clip-path:polygon(0 0, 100% 50%, 0 100%); background:#fff;"></span>
+            <span style="display:flex; flex-direction:column; line-height:1.1;"><span style="font-size:11px; letter-spacing:1px; opacity:.8;">GET IT ON</span><span style="font-size:20px; font-weight:700;">Google Play</span></span>
+          </a>
+          <a data-cursor href="#" style="display:flex; align-items:center; gap:14px; background:#1A1410; color:#fff; text-decoration:none; padding:12px 22px; border-radius:14px;">
+            <span style="width:24px; height:26px; flex:none; border-radius:50% 50% 50% 50% / 60% 60% 40% 40%; background:#fff;"></span>
+            <span style="display:flex; flex-direction:column; line-height:1.1;"><span style="font-size:11px; letter-spacing:1px; opacity:.8;">Download on the</span><span style="font-size:20px; font-weight:700;">App Store</span></span>
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- big wordmark at the end -->
+    <div style="text-align:center; line-height:.78; margin-top:40px;">
+      <div style="font-family:'Luckiest Guy',cursive; font-size:clamp(110px,26vw,400px); color:#F7E1CD; letter-spacing:2px; text-shadow:5px 6px 0 rgba(0,0,0,.14);">SMASH</div>
+    </div>
+
+    <div style="max-width:1200px; margin:0 auto; border-top:1px solid rgba(247,225,205,.25); padding:24px 0 34px; display:flex; flex-wrap:wrap; gap:18px; justify-content:space-between; align-items:center;">
+      <div style="font-family:'Luckiest Guy',cursive; color:#F7E1CD; font-size:15px; letter-spacing:1px;">© 2026 SMASH BURGERS</div>
+      <p style="margin:0; max-width:760px; font-size:12px; line-height:1.5; color:rgba(247,225,205,.7); font-weight:400;">Apple and the Apple logo are trademarks of Apple Inc., registered in the U.S. and other countries. App Store is a service mark of Apple Inc., registered in the U.S. and other countries. Google Play and the Google Play logo are trademarks of Google Inc.</p>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+
+class Component {
+  componentDidMount() {
+    this._running = true;
+    this._revealed = false;
+    this._gsapReady = false;
+    this._scrollInit = false;
+
+    // lock scroll during loader
+    this._html = document.documentElement;
+    this._prevOverflow = this._html.style.overflow;
+    this._html.style.overflow = 'hidden';
+
+    this._startCursor();
+    this._startLoader();
+    this._startHangPhysics();
+    this._waitForGsap(0);
+  }
+
+  componentWillUnmount() {
+    this._running = false;
+    if (this._html) this._html.style.overflow = this._prevOverflow || '';
+    if (this._raf) cancelAnimationFrame(this._raf);
+    if (this._raf2) cancelAnimationFrame(this._raf2);
+    if (this._raf3) cancelAnimationFrame(this._raf3);
+    [this._onMove, this._onOver, this._onOut].forEach(() => {});
+    window.removeEventListener('mousemove', this._onMove);
+    document.removeEventListener('mouseover', this._onOver);
+    document.removeEventListener('mouseout', this._onOut);
+    if (window.ScrollTrigger) window.ScrollTrigger.getAll().forEach(t => t.kill());
+  }
+
+  /* ---------- CUSTOM CURSOR ---------- */
+  _startCursor() {
+    const fine = window.matchMedia && window.matchMedia('(hover:hover) and (pointer:fine)').matches;
+    if (!fine) return;
+    const ring = document.getElementById('cursorRing');
+    const dot = document.getElementById('cursorDot');
+    if (!ring || !dot) return;
+    let mx = window.innerWidth / 2, my = window.innerHeight / 2;
+    let rx = mx, ry = my, shown = false;
+    let onRed = false;
+
+    // Walk up DOM from point, return 'yellow' if over a red bg, else 'red'
+    const getBgColor = (x, y) => {
+      const el = document.elementFromPoint(x, y);
+      let node = el;
+      while (node && node !== document.body) {
+        const bg = window.getComputedStyle(node).backgroundColor;
+        if (bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent') {
+          const m = bg.match(/\d+/g);
+          if (m) {
+            const [r, g, b] = m.map(Number);
+            return (r > 150 && g < 60 && b < 60) ? 'yellow' : 'red';
+          }
+          break;
+        }
+        node = node.parentElement;
+      }
+      return 'red';
+    };
+
+    const applyColor = (color) => {
+      const c = color === 'yellow' ? '#FFD23F' : '#E8190B';
+      ring.style.borderColor = c;
+      dot.style.background = c;
+    };
+
+    this._onMove = (e) => {
+      mx = e.clientX; my = e.clientY;
+      dot.style.left = mx + 'px'; dot.style.top = my + 'px';
+      if (!shown) { shown = true; ring.style.opacity = '1'; dot.style.opacity = '1'; }
+      const color = getBgColor(mx, my);
+      onRed = (color === 'yellow');
+      applyColor(color);
+    };
+    this._onOver = (e) => {
+      if (e.target.closest && e.target.closest('a,button,[data-cursor]')) {
+        ring.style.width = '70px'; ring.style.height = '70px';
+        ring.style.background = onRed ? 'rgba(255,210,63,.15)' : 'rgba(232,25,11,.12)';
+      }
+    };
+    this._onOut = (e) => {
+      if (e.target.closest && e.target.closest('a,button,[data-cursor]')) {
+        ring.style.width = '40px'; ring.style.height = '40px'; ring.style.background = 'transparent';
+      }
+    };
+    window.addEventListener('mousemove', this._onMove);
+    document.addEventListener('mouseover', this._onOver);
+    document.addEventListener('mouseout', this._onOut);
+    const loop = () => {
+      if (!this._running) return;
+      rx += (mx - rx) * 0.18; ry += (my - ry) * 0.18;
+      ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+      this._raf = requestAnimationFrame(loop);
+    };
+    loop();
+  }
+
+  /* ---------- LOADER ---------- */
+  _startLoader() {
+    const drop = (id, delay) => setTimeout(() => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const y = el.getAttribute('data-y') || '0';
+      const rot = id === 'pcCheese' ? ' rotate(-2deg)' : '';
+      el.style.opacity = '1';
+      el.style.transform = `translate(-50%, ${y}px)${rot}`;
+    }, delay);
+    drop('pcBun2', 150);
+    drop('pcPatty', 430);
+    drop('pcCheese', 700);
+    drop('pcBun1', 980);
+
+    const lt = document.getElementById('loadText');
+    const phrases = ['Searing the glazed patty…', 'Preparing to serve…', 'READY TO SMASH!'];
+    let i = 0;
+    const setText = (t) => {
+      if (!lt) return;
+      lt.style.opacity = '0';
+      setTimeout(() => { lt.textContent = t; lt.style.opacity = '1'; }, 220);
+    };
+    if (lt) { lt.textContent = phrases[0]; lt.style.opacity = '1'; }
+    const t1 = setTimeout(() => setText(phrases[1]), 1500);
+    const t2 = setTimeout(() => { i = 2; setText(phrases[2]); }, 2700);
+
+    this._loadTimers = [t1, t2, setTimeout(() => this._finishLoader(), 3700)];
+  }
+
+  _finishLoader() {
+    const loader = document.getElementById('loader');
+    if (loader) {
+      loader.style.opacity = '0';
+      loader.style.pointerEvents = 'none';
+      setTimeout(() => { loader.style.display = 'none'; }, 720);
+    }
+    if (this._html) this._html.style.overflow = this._prevOverflow || '';
+    this._revealHero();
+    this._revealed = true;
+    this._maybeInitScroll();
+  }
+
+  /* ---------- HERO ENTRANCE ---------- */
+  _revealHero() {
+    const set = (id, fn, delay) => setTimeout(() => { const el = document.getElementById(id); if (el) fn(el); }, delay);
+    set('heroTitle', (el) => { el.style.transition = 'transform .8s cubic-bezier(.2,1.2,.3,1), opacity .6s ease'; el.style.transform = 'scale(1)'; el.style.opacity = '1'; }, 60);
+    set('heroBurger', (el) => { el.style.transform = 'translate(-50%,-50%)'; el.style.opacity = '1'; }, 360);
+    set('heroL', (el) => { el.style.transform = 'rotate(-13deg) translateY(0)'; el.style.opacity = '1'; }, 620);
+    set('heroR', (el) => { el.style.transform = 'rotate(11deg) translateY(0)'; el.style.opacity = '1'; }, 720);
+  }
+
+  /* ---------- GSAP / SCROLL ---------- */
+  _waitForGsap(tries) {
+    if (!this._running) return;
+    if (window.gsap && window.ScrollTrigger) {
+      window.gsap.registerPlugin(window.ScrollTrigger);
+      this._gsapReady = true;
+      this._maybeInitScroll();
+    } else if (tries < 80) {
+      setTimeout(() => this._waitForGsap(tries + 1), 100);
+    }
+  }
+
+  _maybeInitScroll() {
+    if (this._scrollInit || !this._gsapReady || !this._revealed) return;
+    this._scrollInit = true;
+    const g = window.gsap, ST = window.ScrollTrigger;
+
+    // floating ingredients parallax
+    document.querySelectorAll('[data-float]').forEach((el) => {
+      const dir = el.dataset.dir === 'l' ? -1 : 1;
+      const speed = parseFloat(el.dataset.speed || '1');
+      const wrap = el.closest('[data-floatwrap]');
+      g.fromTo(el, { x: dir * (220 + speed * 60), opacity: 0 },
+        { x: 0, opacity: 1, ease: 'none',
+          scrollTrigger: { trigger: wrap, start: 'top 88%', end: 'top 38%', scrub: true } });
+      g.fromTo(el, { y: 90 * speed }, { y: -90 * speed, ease: 'none',
+        scrollTrigger: { trigger: wrap, start: 'top bottom', end: 'bottom top', scrub: true } });
+    });
+
+    // plane along path
+    const path = document.getElementById('routePath');
+    const prog = document.getElementById('routeProg');
+    const plane = document.getElementById('plane');
+    if (path && plane && prog) {
+      const len = path.getTotalLength();
+      prog.style.strokeDasharray = len;
+      prog.style.strokeDashoffset = len;
+      const place = (p) => {
+        prog.style.strokeDashoffset = len * (1 - p);
+        const pt = path.getPointAtLength(len * p);
+        const pt2 = path.getPointAtLength(Math.min(len, len * p + 2));
+        const ang = Math.atan2(pt2.y - pt.y, pt2.x - pt.x) * 180 / Math.PI;
+        plane.setAttribute('transform', `translate(${pt.x} ${pt.y}) rotate(${ang})`);
+      };
+      place(0);
+      ST.create({ trigger: '#routeWrap', start: 'top 72%', end: 'bottom 75%', scrub: 0.7,
+        onUpdate: (self) => place(self.progress) });
+    }
+
+    this._initTruckScroll();
+    ST.refresh();
+  }
+
+  /* ---------- HANGING FOOTER PHYSICS ---------- */
+  _startHangPhysics() {
+    const init = () => {
+      if (!this._running) return;
+      const pivots = [...document.querySelectorAll('[data-pivot]')];
+      if (!pivots.length) { setTimeout(init, 150); return; }
+      const st = pivots.map(() => ({ a: 0, v: 0 }));
+      let lastY = window.scrollY || window.pageYOffset || 0;
+      const loop = () => {
+        if (!this._running) return;
+        const y = window.scrollY || window.pageYOffset || 0;
+        const dv = y - lastY; lastY = y;
+        const t = Date.now();
+        pivots.forEach((p, i) => {
+          const s = st[i];
+          s.v += dv * 0.05 * (i % 2 ? 1 : -1) * (1 - i * 0.06);
+          s.v += Math.sin(t / 760 + i * 1.3) * 0.018;  // idle sway
+          s.v += -s.a * 0.014;                          // spring back
+          s.v *= 0.965;                                 // damping
+          s.a += s.v;
+          if (s.a > 32) { s.a = 32; s.v *= -0.4; }
+          if (s.a < -32) { s.a = -32; s.v *= -0.4; }
+          p.style.transform = `rotate(${s.a.toFixed(2)}deg)`;
+        });
+        this._raf2 = requestAnimationFrame(loop);
+      };
+      loop();
+    };
+    init();
+  }
+
+  scrollCards(dir) {
+    const el = document.getElementById('flagship-scroller');
+    if (!el) return;
+    const card = el.querySelector('[data-card]');
+    const step = card ? card.offsetWidth + 32 : el.clientWidth * 0.8;
+    el.scrollBy({ left: dir * step, behavior: 'smooth' });
+  }
+
+  _initTruckScroll() {
+    const route = document.getElementById('route');
+    const truck = document.getElementById('truck');
+    if (!route || !truck) return;
+    let smoothY = null;
+
+    const tick = () => {
+      if (!this._running) return;
+      const stops = [...route.querySelectorAll('[data-stop]')];
+      if (!stops.length) { this._raf3 = requestAnimationFrame(tick); return; }
+
+      const n = stops.length;
+      const vc = window.innerHeight / 2; // viewport center
+
+      // Each stop's center in viewport coords
+      const viewCenters = stops.map(s => {
+        const r = s.getBoundingClientRect();
+        return r.top + r.height / 2;
+      });
+      // Each stop's center in route-local coords (for truck positioning)
+      const routeCenters = stops.map(s => s.offsetTop + s.offsetHeight / 2);
+
+      // Fractional stop index: 0 = first stop centered, n-1 = last stop centered
+      let frac;
+      if (vc <= viewCenters[0]) {
+        frac = 0;
+      } else if (vc >= viewCenters[n - 1]) {
+        frac = n - 1;
+      } else {
+        frac = 0;
+        for (let i = 0; i < n - 1; i++) {
+          if (vc >= viewCenters[i] && vc <= viewCenters[i + 1]) {
+            frac = i + (vc - viewCenters[i]) / (viewCenters[i + 1] - viewCenters[i]);
+            break;
+          }
+        }
+      }
+      frac = Math.max(0, Math.min(n - 1, frac));
+
+      // Map fractional index to route-local Y
+      const i0 = Math.min(Math.floor(frac), n - 2);
+      const t = frac - i0;
+      const targetY = routeCenters[i0] + (routeCenters[i0 + 1] - routeCenters[i0]) * t;
+
+      if (smoothY === null) smoothY = targetY;
+      smoothY += (targetY - smoothY) * 0.12;
+
+      truck.style.transform = `translate(-50%, ${smoothY.toFixed(1)}px) translateY(-50%)`;
+
+      // Highlight nearest marker
+      const nearest = Math.round(frac);
+      stops.forEach((s, i) => {
+        const m = s.querySelector('[data-marker]');
+        if (!m) return;
+        const on = (i === nearest && Math.abs(frac - nearest) < 0.35);
+        m.style.transform = `translate(-50%,-50%) scale(${on ? 1.35 : 1})`;
+        m.style.background = on ? '#E8190B' : '#FFC200';
+      });
+
+      this._raf3 = requestAnimationFrame(tick);
+    };
+    tick();
+  }
+
+  renderVals() {
+    return {
+      next: () => this.scrollCards(1),
+      prev: () => this.scrollCards(-1),
+    };
+  }
+}
+
+
+(function () {
+  function boot() {
+    // Reproduce the runtime's style-hover -> :hover rules.
+    var sheet = document.createElement('style');
+    document.head.appendChild(sheet);
+    var n = 0;
+    document.querySelectorAll('[style-hover]').forEach(function (el) {
+      var css = el.getAttribute('style-hover');
+      if (!css) return;
+      var cls = 'scp' + (n++).toString(36);
+      el.classList.add(cls);
+      try { sheet.sheet.insertRule('.' + cls + ':hover{' + css + '}', sheet.sheet.cssRules.length); } catch (e) {}
+    });
+
+    var cmp = new Component();
+    window.__cmp = cmp;
+    cmp.componentDidMount();
+  }
+  if (document.readyState !== 'loading') boot();
+  else document.addEventListener('DOMContentLoaded', boot);
+})();
+</script>
+</body>
+</html>
