@@ -163,7 +163,7 @@ export default function OnTheRoad() {
             key={s.city}
             data-stop
             className="relative pl-[84px]"
-            style={{ marginBottom: i === STOPS.length - 1 ? 10 : 50 }}
+            style={{ marginBottom: i === STOPS.length - 1 ? 10 : 28 }}
           >
             <div
               data-marker
@@ -178,9 +178,9 @@ export default function OnTheRoad() {
               <img
                 src={s.img}
                 alt={s.city}
-                className="min-h-[240px] flex-[1_1_220px] self-stretch object-cover"
+                className="max-h-[150px] min-h-[120px] flex-[1_1_180px] self-stretch object-cover sm:max-h-[170px]"
               />
-              <div className="flex-[1_1_300px] px-8 py-8">
+              <div className="flex-[1_1_300px] px-8 py-5">
                 <div className="font-poster text-[15px] tracking-[2px] text-orange">
                   {s.state}
                 </div>
