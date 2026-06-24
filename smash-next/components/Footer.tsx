@@ -96,9 +96,15 @@ export default function Footer({ big = true }: { big?: boolean }) {
           <h4 className="mb-5 font-poster text-[22px] tracking-wide text-yellow-bright">
             DOWNLOAD OUR APP
           </h4>
-          <div className="flex max-w-[240px] flex-col gap-3.5">
-            <AppBadge top="GET IT ON" bottom="Google Play" />
-            <AppBadge top="Download on the" bottom="App Store" />
+          <div className="flex max-w-[240px] flex-col items-start gap-3.5">
+            <AppBadge
+              src="/assets/google-play-badge.png"
+              label="Get it on Google Play"
+            />
+            <AppBadge
+              src="/assets/app-store-badge.svg"
+              label="Download on the App Store"
+            />
           </div>
         </div>
       </div>
@@ -148,18 +154,15 @@ function FooterCol({ title, links }: { title: string; links: string[] }) {
   );
 }
 
-function AppBadge({ top, bottom }: { top: string; bottom: string }) {
+function AppBadge({ src, label }: { src: string; label: string }) {
   return (
-    <a
-      data-cursor
-      href="#"
-      className="flex items-center gap-3.5 rounded-2xl bg-[#1A1410] px-5 py-3 text-white"
-    >
-      <span className="h-6 w-6 flex-none rounded-md bg-white" />
-      <span className="flex flex-col leading-tight">
-        <span className="text-[11px] tracking-wide opacity-80">{top}</span>
-        <span className="text-xl font-bold">{bottom}</span>
-      </span>
+    <a data-cursor href="#" aria-label={label} className="block">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt={label}
+        className="h-[52px] w-auto transition-transform hover:scale-[1.03]"
+      />
     </a>
   );
 }
