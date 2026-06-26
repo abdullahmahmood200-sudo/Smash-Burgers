@@ -1,59 +1,84 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useCart } from "@/components/cart/CartProvider";
+import { registerGsap } from "@/lib/gsap";
 import type { MenuItem } from "@/lib/types";
 
 export default function Flagships({ items }: { items: MenuItem[] }) {
-  const scrollerRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
   const { add } = useCart();
 
-  const scrollCards = (dir: number) => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    const card = el.querySelector<HTMLElement>("[data-card]");
-    const step = card ? card.offsetWidth + 32 : el.clientWidth * 0.8;
-    el.scrollBy({ left: dir * step, behavior: "smooth" });
-  };
+  useEffect(() => {
+    const { gsap, ScrollTrigger } = registerGsap();
+    const section = sectionRef.current;
+    const track = trackRef.current;
+    if (!section || !track) return;
+
+    const ctx = gsap.context(() => {
+      // The track uses w-max, so its own offsetWidth equals its content width.
+      // Measure the overflow against the full-width section instead.
+      const getDistance = () => track.scrollWidth - section.offsetWidth;
+
+      // Pinned horizontal scroll: cards slide left as the user scrolls down.
+      gsap.to(track, {
+        x: () => -getDistance(),
+        ease: "none",
+        scrollTrigger: {
+          trigger: section,
+          start: "top top",
+          end: () => `+=${getDistance()}`,
+          scrub: 1,
+          pin: true,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+        },
+      });
+
+      // Subtle card tilt that builds as the track moves through the viewport.
+      gsap.to(".burger-card", {
+        rotateY: 6,
+        ease: "none",
+        scrollTrigger: {
+          trigger: section,
+          start: "top top",
+          end: () => `+=${getDistance()}`,
+          scrub: 1,
+          invalidateOnRefresh: true,
+        },
+      });
+
+      ScrollTrigger.refresh();
+    }, section);
+
+    return () => ctx.revert();
+  }, [items]);
 
   return (
-    <section id="flagships" className="relative pb-24 pt-4">
-      <div className="flex flex-wrap items-end justify-between gap-5 px-6 pb-8 md:px-12">
+    <section
+      id="flagships"
+      ref={sectionRef}
+      className="relative overflow-hidden pb-24 pt-4"
+    >
+      <div className="px-6 pb-8 md:px-12">
         <h2 className="m-0 font-display text-[clamp(54px,7vw,128px)] leading-[0.85] tracking-tight text-red-bright [text-shadow:4px_4px_0_#fff]">
           PICK YOUR
           <br />
           FIGHTER
         </h2>
-        <div className="flex gap-3.5 pb-2.5">
-          <button
-            data-cursor
-            onClick={() => scrollCards(-1)}
-            aria-label="Previous"
-            className="h-16 w-16 rounded-full bg-red text-3xl text-white shadow-[0_5px_0_rgba(0,0,0,0.14)]"
-          >
-            ‹
-          </button>
-          <button
-            data-cursor
-            onClick={() => scrollCards(1)}
-            aria-label="Next"
-            className="h-16 w-16 rounded-full bg-red text-3xl text-white shadow-[0_5px_0_rgba(0,0,0,0.14)]"
-          >
-            ›
-          </button>
-        </div>
       </div>
 
       <div
-        ref={scrollerRef}
-        className="no-scrollbar flex snap-x snap-mandatory gap-8 overflow-x-auto px-6 pb-8 pt-2.5 md:px-12"
-        style={{ scrollPaddingLeft: "48px" }}
+        ref={trackRef}
+        className="flex w-max gap-8 px-6 pb-8 pt-2.5 md:px-12"
+        style={{ willChange: "transform" }}
       >
         {items.map((item) => (
           <article
             key={item.id}
-            data-card
-            className="w-[min(78vw,1040px)] flex-none snap-start overflow-hidden rounded-[34px] bg-cream-card shadow-[0_18px_40px_rgba(42,20,8,0.12)]"
+            className="burger-card w-[min(78vw,1040px)] flex-none overflow-hidden rounded-[34px] bg-cream-card shadow-[0_18px_40px_rgba(42,20,8,0.12)]"
+            style={{ transformStyle: "preserve-3d", perspective: "800px" }}
           >
             <div className="relative">
               {/* eslint-disable-next-line @next/next/no-img-element */}
