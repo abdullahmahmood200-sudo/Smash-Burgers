@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useCart } from "./cart/CartProvider";
+import TapTarget from "@/components/TapTarget";
+import MobileNav from "@/components/MobileNav";
 
 export default function Nav({ variant = "home" }: { variant?: "home" | "menu" }) {
   const { count, openCart } = useCart();
@@ -20,25 +22,28 @@ export default function Nav({ variant = "home" }: { variant?: "home" | "menu" })
       </Link>
 
       <div className="flex items-center gap-3">
-        <button
-          data-cursor
-          onClick={openCart}
-          aria-label="Open cart"
-          className="relative flex items-center gap-2 rounded-full bg-red px-5 py-3 font-poster text-[clamp(13px,1.05vw,17px)] tracking-wide text-white md:px-7"
-        >
-          CART
-          {count > 0 && (
-            <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-yellow-bright px-1.5 text-sm font-bold text-red">
-              {count}
-            </span>
-          )}
-        </button>
+        <TapTarget>
+          <button
+            data-cursor
+            onClick={openCart}
+            aria-label="Open cart"
+            className="relative flex items-center gap-2 rounded-full bg-red px-5 py-3 font-poster text-[clamp(13px,1.05vw,17px)] tracking-wide text-white md:px-7"
+          >
+            CART
+            {count > 0 && (
+              <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-yellow-bright px-1.5 text-sm font-bold text-red">
+                {count}
+              </span>
+            )}
+          </button>
+        </TapTarget>
 
+        {/* Desktop link (md+); on mobile the bottom-sheet nav takes over */}
         {variant === "home" ? (
           <Link
             href="/menu"
             data-cursor
-            className="inline-flex items-center gap-2.5 whitespace-nowrap rounded-full border-2 border-red bg-transparent px-6 py-3 font-poster text-[clamp(13px,1.05vw,17px)] tracking-wide text-red"
+            className="hidden items-center gap-2.5 whitespace-nowrap rounded-full border-2 border-red bg-transparent px-6 py-3 font-poster text-[clamp(13px,1.05vw,17px)] tracking-wide text-red md:inline-flex"
           >
             MENU
             <span className="flex flex-col justify-center gap-[3px]">
@@ -51,11 +56,14 @@ export default function Nav({ variant = "home" }: { variant?: "home" | "menu" })
           <Link
             href="/"
             data-cursor
-            className="rounded-full bg-red px-6 py-3 font-poster text-[clamp(13px,1.05vw,17px)] tracking-wide text-white md:px-7"
+            className="hidden rounded-full bg-red px-6 py-3 font-poster text-[clamp(13px,1.05vw,17px)] tracking-wide text-white md:inline-block md:px-7"
           >
             HOME
           </Link>
         )}
+
+        {/* Mobile bottom-sheet navigation */}
+        <MobileNav />
       </div>
     </nav>
   );

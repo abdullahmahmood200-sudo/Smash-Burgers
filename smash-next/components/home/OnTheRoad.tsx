@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import AnimatedCard from "@/components/AnimatedCard";
+import TapTarget from "@/components/TapTarget";
 
 interface Stop {
   state: string;
@@ -169,7 +171,8 @@ export default function OnTheRoad() {
               data-marker
               className="absolute left-[30px] top-1/2 z-[15] h-[30px] w-[30px] -translate-x-1/2 -translate-y-1/2 rounded-full border-[5px] border-red bg-gold transition-[transform,background] duration-200"
             />
-            <div
+            <AnimatedCard
+              index={i % 2}
               className={`flex flex-wrap overflow-hidden rounded-[26px] bg-cream-card shadow-[0_14px_34px_rgba(42,20,8,0.12)] ${
                 s.reverse ? "flex-row-reverse" : ""
               }`}
@@ -192,15 +195,17 @@ export default function OnTheRoad() {
                   <div className="text-[17px] font-semibold text-ink">{s.phone}</div>
                   <div className="text-[15px] font-semibold text-cocoa">{s.hours}</div>
                 </div>
-                <a
-                  data-cursor
-                  href="/menu"
-                  className="inline-block rounded-full bg-red px-9 py-3.5 font-poster text-base tracking-wide text-white shadow-[0_5px_0_rgba(0,0,0,0.14)]"
-                >
-                  ORDER NOW
-                </a>
+                <TapTarget className="inline-block">
+                  <a
+                    data-cursor
+                    href="/menu"
+                    className="inline-block rounded-full bg-red px-9 py-3.5 font-poster text-base tracking-wide text-white shadow-[0_5px_0_rgba(0,0,0,0.14)]"
+                  >
+                    ORDER NOW
+                  </a>
+                </TapTarget>
               </div>
-            </div>
+            </AnimatedCard>
           </div>
         ))}
       </div>

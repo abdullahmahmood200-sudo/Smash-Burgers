@@ -2,8 +2,9 @@
 
 import { useEffect, useRef } from "react";
 
-/** Per-item lerp delays — item 0 trails the least, item 5 the most. */
-const LERPS = [0.18, 0.14, 0.1, 0.08, 0.06, 0.04];
+/** Per-link easing for the follow-chain. Icon 0 chases the cursor; each
+ *  later icon chases the one in front of it, so the tail lags and spreads. */
+const LERPS = [0.32, 0.3, 0.28, 0.26, 0.24, 0.22];
 
 function Tomato() {
   return (
@@ -136,13 +137,19 @@ export default function CursorTrail() {
       dy += (my - dy) * 0.15;
       dot.style.transform = `translate(${dx}px, ${dy}px) translate(-50%, -50%)`;
 
+      // Chain-follow: icon 0 chases the cursor, each later icon chases the
+      // icon ahead of it — producing a tail that visibly lags behind.
+      let tx = mx;
+      let ty = my;
       pos.forEach((p, i) => {
-        p.x += (mx - p.x) * LERPS[i];
-        p.y += (my - p.y) * LERPS[i];
+        p.x += (tx - p.x) * LERPS[i];
+        p.y += (ty - p.y) * LERPS[i];
         const el = itemRefs.current[i];
         if (el) {
           el.style.transform = `translate(${p.x}px, ${p.y}px) translate(-50%, -50%)`;
         }
+        tx = p.x;
+        ty = p.y;
       });
 
       rafRef.current = requestAnimationFrame(loop);

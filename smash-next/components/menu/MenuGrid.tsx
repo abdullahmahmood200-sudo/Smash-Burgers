@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useCart } from "@/components/cart/CartProvider";
+import TapTarget from "@/components/TapTarget";
 import type { MenuItem } from "@/lib/types";
 
 export default function MenuGrid({ items }: { items: MenuItem[] }) {
@@ -180,16 +181,18 @@ export default function MenuGrid({ items }: { items: MenuItem[] }) {
                   />
                 )}
               </div>
-              <button
-                data-cursor
-                onClick={(e) => {
-                  e.stopPropagation();
-                  add(item);
-                }}
-                className="mt-5 w-full rounded-full bg-red px-5 py-4 font-poster text-[clamp(17px,1.4vw,21px)] tracking-wide text-white shadow-[0_6px_0_rgba(0,0,0,0.14)] transition-transform active:translate-y-1"
-              >
-                ADD TO CART
-              </button>
+              <TapTarget className="mt-5 w-full">
+                <button
+                  data-cursor
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    add(item);
+                  }}
+                  className="w-full rounded-full bg-red px-5 py-4 font-poster text-[clamp(17px,1.4vw,21px)] tracking-wide text-white shadow-[0_6px_0_rgba(0,0,0,0.14)]"
+                >
+                  ADD TO CART
+                </button>
+              </TapTarget>
             </div>
           );
         })}
