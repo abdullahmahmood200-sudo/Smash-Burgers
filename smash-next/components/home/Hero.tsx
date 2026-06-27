@@ -14,6 +14,11 @@ export default function Hero() {
   const heroRef = useRef<HTMLDivElement>(null);
   const reduced = useRef(false);
 
+  // ---- Burger eye tracking ----
+  const eyeLRef = useRef<HTMLDivElement>(null);
+  const eyeRRef = useRef<HTMLDivElement>(null);
+  const [pupils, setPupils] = useState({ lx: 0, ly: 0, rx: 0, ry: 0 });
+
   // ---- Loader build + dismissal ----
   useEffect(() => {
     reduced.current =
@@ -111,6 +116,49 @@ export default function Hero() {
     return () => ctx.revert();
   }, [loaderDone]);
 
+  // ---- Pupils follow the cursor (throttled via RAF, max 8px radius) ----
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    let mx = 0;
+    let my = 0;
+    let raf = 0;
+    let pending = false;
+
+    const compute = (el: HTMLDivElement | null) => {
+      if (!el) return { x: 0, y: 0 };
+      const r = el.getBoundingClientRect();
+      const cx = r.left + r.width / 2;
+      const cy = r.top + r.height / 2;
+      const ang = Math.atan2(my - cy, mx - cx);
+      const dist = Math.min(8, Math.hypot(mx - cx, my - cy));
+      return { x: Math.cos(ang) * dist, y: Math.sin(ang) * dist };
+    };
+
+    const update = () => {
+      pending = false;
+      const l = compute(eyeLRef.current);
+      const r = compute(eyeRRef.current);
+      setPupils({ lx: l.x, ly: l.y, rx: r.x, ry: r.y });
+    };
+
+    const onMove = (e: MouseEvent) => {
+      mx = e.clientX;
+      my = e.clientY;
+      if (!pending) {
+        pending = true;
+        raf = requestAnimationFrame(update);
+      }
+    };
+
+    window.addEventListener("mousemove", onMove);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      cancelAnimationFrame(raf);
+    };
+  }, []);
+
   return (
     <>
       {/* ---------- LOADER ---------- */}
@@ -178,12 +226,32 @@ export default function Hero() {
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/assets/burger.png"
+            src="/burger.png"
             alt="Smash burger"
             className="block w-full [filter:drop-shadow(0_26px_30px_rgba(0,0,0,0.28))]"
           />
-          <div className="animate-blink absolute left-[30%] top-[24%] h-[clamp(34px,3.4vw,58px)] w-[clamp(34px,3.4vw,58px)] rounded-full bg-white [clip-path:polygon(50%_50%,100%_16%,100%_0,0_0,0_100%,100%_100%,100%_84%)]" />
-          <div className="animate-blink absolute left-[54%] top-[24%] h-[clamp(34px,3.4vw,58px)] w-[clamp(34px,3.4vw,58px)] rounded-full bg-white [animation-delay:0.15s] [clip-path:polygon(50%_50%,100%_16%,100%_0,0_0,0_100%,100%_100%,100%_84%)]" />
+          <div
+            ref={eyeLRef}
+            className="animate-blink absolute left-[30%] top-[24%] h-[clamp(34px,3.4vw,58px)] w-[clamp(34px,3.4vw,58px)] rounded-full bg-white [clip-path:polygon(50%_50%,100%_16%,100%_0,0_0,0_100%,100%_100%,100%_84%)]"
+          >
+            <div
+              className="absolute left-1/2 top-1/2 h-[42%] w-[42%] rounded-full bg-[#2A1408]"
+              style={{
+                transform: `translate(-50%, -50%) translate(${pupils.lx}px, ${pupils.ly}px)`,
+              }}
+            />
+          </div>
+          <div
+            ref={eyeRRef}
+            className="animate-blink absolute left-[54%] top-[24%] h-[clamp(34px,3.4vw,58px)] w-[clamp(34px,3.4vw,58px)] rounded-full bg-white [animation-delay:0.15s] [clip-path:polygon(50%_50%,100%_16%,100%_0,0_0,0_100%,100%_100%,100%_84%)]"
+          >
+            <div
+              className="absolute left-1/2 top-1/2 h-[42%] w-[42%] rounded-full bg-[#2A1408]"
+              style={{
+                transform: `translate(-50%, -50%) translate(${pupils.rx}px, ${pupils.ry}px)`,
+              }}
+            />
+          </div>
         </div>
 
         <div

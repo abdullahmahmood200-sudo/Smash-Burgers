@@ -12,6 +12,17 @@
   box-sizing: border-box;
 }
 
+/* Hide the default cursor site-wide — the custom cursor + trail take over. */
+* {
+  cursor: none;
+}
+
+/* Mobile / reduced-motion: CursorTrail flips this on to restore the cursor. */
+.cursor-trail-off,
+.cursor-trail-off * {
+  cursor: auto !important;
+}
+
 html,
 body {
   margin: 0;

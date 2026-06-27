@@ -3,6 +3,7 @@ import { Lilita_One, Luckiest_Guy, Fredoka } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/components/cart/CartProvider";
 import CustomCursor from "@/components/CustomCursor";
+import CursorTrail from "@/components/CursorTrail";
 import CartDrawer from "@/components/cart/CartDrawer";
 
 const lilita = Lilita_One({
@@ -49,6 +50,7 @@ export default function RootLayout({
       <body>
         <CartProvider>
           <CustomCursor />
+          <CursorTrail />
           {children}
           <CartDrawer />
         </CartProvider>

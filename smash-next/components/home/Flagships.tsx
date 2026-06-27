@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useCart } from "@/components/cart/CartProvider";
 import { registerGsap } from "@/lib/gsap";
+import MagneticButton from "@/components/MagneticButton";
 import type { MenuItem } from "@/lib/types";
 
 export default function Flagships({ items }: { items: MenuItem[] }) {
@@ -105,13 +106,15 @@ export default function Flagships({ items }: { items: MenuItem[] }) {
               <p className="mb-5 mt-3 line-clamp-2 text-[clamp(16px,1.3vw,22px)] font-semibold leading-tight text-ink">
                 {item.description}
               </p>
-              <button
-                data-cursor
-                onClick={() => add(item)}
-                className="inline-block rounded-full bg-red px-10 py-4 font-poster text-[clamp(16px,1.3vw,22px)] tracking-wide text-white shadow-[0_6px_0_rgba(0,0,0,0.14)] transition-transform active:translate-y-1"
-              >
-                ORDER NOW
-              </button>
+              <MagneticButton>
+                <button
+                  data-cursor
+                  onClick={() => add(item)}
+                  className="inline-block rounded-full bg-red px-10 py-4 font-poster text-[clamp(16px,1.3vw,22px)] tracking-wide text-white shadow-[0_6px_0_rgba(0,0,0,0.14)] transition-transform active:translate-y-1"
+                >
+                  ORDER NOW
+                </button>
+              </MagneticButton>
             </div>
           </article>
         ))}

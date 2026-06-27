@@ -11,6 +11,40 @@ export default function MenuGrid({ items }: { items: MenuItem[] }) {
   const [isTouch, setIsTouch] = useState(false);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
+  // 3D tilt + glare, tracked per card index.
+  type Tilt = { rx: number; ry: number; gx: number; gy: number; on: boolean };
+  const [tilt, setTilt] = useState<Record<number, Tilt>>({});
+  const reduced = useRef(false);
+
+  useEffect(() => {
+    reduced.current =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }, []);
+
+  const handleTilt = (i: number, e: React.MouseEvent<HTMLDivElement>) => {
+    if (isTouch || reduced.current) return;
+    const r = e.currentTarget.getBoundingClientRect();
+    const nx = ((e.clientX - r.left) / r.width) * 2 - 1;
+    const ny = ((e.clientY - r.top) / r.height) * 2 - 1;
+    setTilt((prev) => ({
+      ...prev,
+      [i]: {
+        rx: +(-ny * 12).toFixed(2),
+        ry: +(nx * 12).toFixed(2),
+        gx: +(((nx + 1) / 2) * 100).toFixed(1),
+        gy: +(((ny + 1) / 2) * 100).toFixed(1),
+        on: true,
+      },
+    }));
+  };
+
+  const resetTilt = (i: number) =>
+    setTilt((prev) => ({
+      ...prev,
+      [i]: { rx: 0, ry: 0, gx: 50, gy: 50, on: false },
+    }));
+
   useEffect(() => {
     try {
       setIsTouch(window.matchMedia("(hover: none)").matches);
@@ -63,6 +97,16 @@ export default function MenuGrid({ items }: { items: MenuItem[] }) {
           const isActive = active === i;
           const dim = active !== null && active !== i;
           const isRevealed = revealed.has(i);
+          const t = tilt[i];
+          const base = !isRevealed
+            ? "translateY(48px) scale(.92)"
+            : isActive
+            ? "scale(1.08)"
+            : "scale(1)";
+          const tiltStr =
+            t && t.on && isRevealed
+              ? `perspective(800px) rotateX(${t.rx}deg) rotateY(${t.ry}deg) `
+              : "";
           return (
             <div
               key={item.id}
@@ -71,23 +115,37 @@ export default function MenuGrid({ items }: { items: MenuItem[] }) {
                 cardRefs.current[i] = el;
               }}
               onMouseEnter={() => !isTouch && setActive(i)}
-              onMouseLeave={() => !isTouch && setActive(null)}
+              onMouseMove={(e) => handleTilt(i, e)}
+              onMouseLeave={() => {
+                if (!isTouch) {
+                  setActive(null);
+                  resetTilt(i);
+                }
+              }}
               onClick={() => isTouch && setActive(isActive ? null : i)}
               className="relative flex cursor-pointer flex-col rounded-[30px] bg-cream-card p-6 transition-[transform,opacity,box-shadow] duration-700"
               style={{
                 zIndex: isActive ? 10 : 1,
                 transitionTimingFunction: "cubic-bezier(.34,1.56,.64,1)",
-                transform: !isRevealed
-                  ? "translateY(48px) scale(.92)"
-                  : isActive
-                  ? "scale(1.08)"
-                  : "scale(1)",
+                transform: tiltStr + base,
                 opacity: !isRevealed ? 0 : dim ? 0.7 : 1,
                 boxShadow: isActive
                   ? "0 30px 60px rgba(42,20,8,.30)"
                   : "0 14px 30px rgba(42,20,8,.10)",
               }}
             >
+              {!isTouch && (
+                <div
+                  className="pointer-events-none absolute inset-0 z-10 rounded-[30px]"
+                  style={{
+                    opacity: t?.on ? 0.15 : 0,
+                    background: `radial-gradient(circle at ${t?.gx ?? 50}% ${
+                      t?.gy ?? 50
+                    }%, rgba(255,255,255,0.9), rgba(255,255,255,0) 55%)`,
+                    transition: "opacity 0.3s ease",
+                  }}
+                />
+              )}
               <div className="flex items-baseline justify-between gap-3.5">
                 <h3 className="m-0 font-display text-[clamp(28px,2.5vw,40px)] leading-[0.92] tracking-tight text-red-bright">
                   {item.name}
