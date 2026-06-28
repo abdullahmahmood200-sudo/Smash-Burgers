@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 
 /** Per-link easing for the follow-chain. Icon 0 chases the cursor; each
  *  later icon chases the one in front of it, so the tail lags and spreads. */
-const LERPS = [0.32, 0.3, 0.28, 0.26, 0.24, 0.22];
+const LERPS = [0.32, 0.3, 0.28, 0.26];
 
 function Tomato() {
   return (
@@ -90,7 +90,7 @@ function Onion() {
   );
 }
 
-const ICONS = [Tomato, Cheese, Carrot, Onion, Tomato, Cheese];
+const ICONS = [Tomato, Cheese, Carrot, Onion];
 
 export default function CursorTrail() {
   const dotRef = useRef<HTMLDivElement>(null);
