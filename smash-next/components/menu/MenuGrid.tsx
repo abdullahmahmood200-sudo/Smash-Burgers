@@ -75,7 +75,16 @@ export default function MenuGrid({ items }: { items: MenuItem[] }) {
       { threshold: 0.18 }
     );
     cardRefs.current.forEach((c) => c && io.observe(c));
-    return () => io.disconnect();
+    // Safety net: if the observer never fires (e.g. unusual rendering contexts),
+    // reveal everything so cards can't get stuck invisible.
+    const fallback = setTimeout(
+      () => setRevealed(new Set(items.map((_, i) => i))),
+      1200
+    );
+    return () => {
+      io.disconnect();
+      clearTimeout(fallback);
+    };
   }, [items]);
 
   const showBackdrop = isTouch && active !== null;
@@ -91,8 +100,10 @@ export default function MenuGrid({ items }: { items: MenuItem[] }) {
       />
 
       <section
-        className="mx-auto grid max-w-[1240px] gap-[34px] px-10 pb-24 pt-12"
-        style={{ gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}
+        className="mx-auto grid max-w-[1240px] gap-6 px-5 pb-24 pt-12 sm:gap-8 sm:px-8 md:gap-[34px] md:px-10"
+        style={{
+          gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))",
+        }}
       >
         {items.map((item, i) => {
           const isActive = active === i;

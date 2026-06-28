@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useMotionValue, animate } from "framer-motion";
 
 interface SwipeCarouselProps {
@@ -18,7 +18,27 @@ export default function SwipeCarousel({
   cardWidth = 280,
   gap = 16,
 }: SwipeCarouselProps) {
-  const snapUnit = cardWidth + gap;
+  // Cards fill the available track width so the active card is always centered
+  // within the viewport (a fixed cardWidth leaves the card left-aligned on
+  // wider phones). Falls back to the cardWidth prop until measured.
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [trackWidth, setTrackWidth] = useState(cardWidth);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    // Ignore zero-width readings (e.g. while the element is laid out in a
+    // hidden/offscreen state) so the cards never collapse to 0.
+    const measure = () => {
+      if (el.clientWidth > 0) setTrackWidth(el.clientWidth);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const snapUnit = trackWidth + gap;
   const x = useMotionValue(0);
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -32,6 +52,11 @@ export default function SwipeCarousel({
       damping: 30,
     });
   };
+
+  // Keep the active card aligned when the track is (re)measured or resized.
+  useEffect(() => {
+    x.set(-(activeIndex * snapUnit));
+  }, [snapUnit, activeIndex, x]);
 
   const handleDragEnd = (
     _: unknown,
@@ -50,7 +75,7 @@ export default function SwipeCarousel({
   };
 
   return (
-    <div className="w-full overflow-hidden">
+    <div ref={containerRef} className="w-full overflow-hidden">
       <motion.div
         className="flex cursor-grab active:cursor-grabbing"
         style={{ x, gap, willChange: "transform" }}
@@ -60,7 +85,7 @@ export default function SwipeCarousel({
         onDragEnd={handleDragEnd}
       >
         {items.map((item, i) => (
-          <div key={i} className="flex-shrink-0" style={{ width: cardWidth }}>
+          <div key={i} className="flex-shrink-0" style={{ width: trackWidth }}>
             {item}
           </div>
         ))}

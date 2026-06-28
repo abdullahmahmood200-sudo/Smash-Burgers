@@ -215,7 +215,7 @@ export default function Hero() {
       >
         <h1
           id="heroTitle"
-          className="m-0 whitespace-nowrap text-center font-display text-[clamp(120px,23vw,420px)] leading-[0.8] tracking-tight text-red-bright opacity-0 [text-shadow:6px_6px_0_rgba(255,255,255,0.95),-4px_-4px_0_#fff,4px_-4px_0_#fff,-4px_4px_0_#fff]"
+          className="m-0 whitespace-nowrap text-center font-display text-[clamp(46px,14vw,420px)] leading-[0.8] tracking-tight text-red-bright opacity-0 [text-shadow:6px_6px_0_rgba(255,255,255,0.95),-4px_-4px_0_#fff,4px_-4px_0_#fff,-4px_4px_0_#fff] sm:text-[clamp(120px,23vw,420px)]"
         >
           THE BURGER
         </h1>

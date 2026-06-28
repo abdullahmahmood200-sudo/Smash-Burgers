@@ -10,6 +10,14 @@
       "autoPort": true
     },
     {
+      "name": "smash-prod",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["next", "start", "-p", "3100"],
+      "cwd": "smash-next",
+      "port": 3100,
+      "autoPort": true
+    },
+    {
       "name": "site",
       "runtimeExecutable": "npx",
       "runtimeArgs": ["--yes", "serve", "site", "-l", "5599"],
