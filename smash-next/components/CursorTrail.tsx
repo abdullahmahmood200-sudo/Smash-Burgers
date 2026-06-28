@@ -93,7 +93,6 @@ function Onion() {
 const ICONS = [Tomato, Cheese, Carrot, Onion];
 
 export default function CursorTrail() {
-  const dotRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const rafRef = useRef(0);
@@ -111,14 +110,11 @@ export default function CursorTrail() {
       return;
     }
 
-    const dot = dotRef.current;
     const container = containerRef.current;
-    if (!dot || !container) return;
+    if (!container) return;
 
     let mx = window.innerWidth / 2;
     let my = window.innerHeight / 2;
-    let dx = mx;
-    let dy = my;
     const pos = LERPS.map(() => ({ x: mx, y: my }));
     let shown = false;
 
@@ -133,10 +129,6 @@ export default function CursorTrail() {
     window.addEventListener("mousemove", onMove);
 
     const loop = () => {
-      dx += (mx - dx) * 0.15;
-      dy += (my - dy) * 0.15;
-      dot.style.transform = `translate(${dx}px, ${dy}px) translate(-50%, -50%)`;
-
       // Chain-follow: icon 0 chases the cursor, each later icon chases the
       // icon ahead of it — producing a tail that visibly lags behind.
       let tx = mx;
@@ -180,11 +172,6 @@ export default function CursorTrail() {
           <Icon />
         </div>
       ))}
-      <div
-        ref={dotRef}
-        className="absolute left-0 top-0 h-3 w-3 rounded-full"
-        style={{ background: "#FF2D2D", transform: "translate(-100px, -100px)" }}
-      />
     </div>
   );
 }
