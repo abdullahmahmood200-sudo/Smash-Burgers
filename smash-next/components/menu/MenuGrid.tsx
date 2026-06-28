@@ -159,10 +159,10 @@ export default function MenuGrid({ items }: { items: MenuItem[] }) {
                 />
               )}
               <div className="flex items-baseline justify-between gap-3.5">
-                <h3 className="m-0 font-display text-[clamp(28px,2.5vw,40px)] leading-[0.92] tracking-tight text-red-bright">
+                <h3 className="m-0 min-w-0 break-words font-display text-[clamp(28px,2.5vw,40px)] leading-[0.92] tracking-tight text-red-bright">
                   {item.name}
                 </h3>
-                <span className="font-display text-[clamp(26px,2.2vw,38px)] leading-[0.9] text-red">
+                <span className="shrink-0 font-display text-[clamp(26px,2.2vw,38px)] leading-[0.9] text-red">
                   ${item.price.toFixed(0)}
                 </span>
               </div>

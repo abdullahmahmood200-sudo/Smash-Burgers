@@ -109,10 +109,10 @@ export default function Flagships({ items }: { items: MenuItem[] }) {
                 </div>
                 <div className="flex flex-1 flex-col px-6 pb-6 pt-4">
                   <div className="flex items-baseline justify-between gap-3">
-                    <h3 className="m-0 font-display text-[clamp(26px,7vw,34px)] leading-[0.9] tracking-tight text-red-bright">
+                    <h3 className="m-0 min-w-0 break-words font-display text-[clamp(26px,7vw,34px)] leading-[0.9] tracking-tight text-red-bright">
                       {item.name.toUpperCase()}
                     </h3>
-                    <span className="font-display text-[clamp(24px,6vw,30px)] leading-[0.9] text-red">
+                    <span className="shrink-0 font-display text-[clamp(24px,6vw,30px)] leading-[0.9] text-red">
                       ${item.price.toFixed(0)}
                     </span>
                   </div>
@@ -159,10 +159,10 @@ export default function Flagships({ items }: { items: MenuItem[] }) {
               </div>
               <div className="shrink-0 px-9 pb-7 pt-5">
                 <div className="flex flex-wrap items-baseline justify-between gap-4">
-                  <h3 className="m-0 font-display text-[clamp(32px,3.6vw,68px)] leading-[0.9] tracking-tight text-red-bright">
+                  <h3 className="m-0 min-w-0 break-words font-display text-[clamp(32px,3.6vw,68px)] leading-[0.9] tracking-tight text-red-bright">
                     {item.name.toUpperCase()}
                   </h3>
-                  <span className="font-display text-[clamp(28px,2.8vw,52px)] leading-[0.9] text-red">
+                  <span className="shrink-0 font-display text-[clamp(28px,2.8vw,52px)] leading-[0.9] text-red">
                     ${item.price.toFixed(0)}
                   </span>
                 </div>
