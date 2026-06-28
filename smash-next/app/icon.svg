@@ -1,0 +1,25 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <g stroke="#231F20" stroke-width="15" stroke-linejoin="round" stroke-linecap="round">
+    <!-- bottom bun -->
+    <path d="M44 392 h424 v34 c0 30-24 54-54 54 H98 c-30 0-54-24-54-54 z" fill="#F4900C"/>
+    <!-- lower lettuce -->
+    <path d="M40 360 q24-28 50 0 q24-28 50 0 q24-28 50 0 q26-28 52 0 q24-28 50 0 q24-28 50 0 q24-28 50 0 l0 38 h-402 z" fill="#7DC832"/>
+    <!-- patty -->
+    <path d="M44 318 h424 v44 H44 z" fill="#D63A2F"/>
+    <!-- cheese triangle -->
+    <path d="M168 312 h176 l-88 92 z" fill="#FBD872"/>
+    <!-- upper lettuce -->
+    <path d="M40 286 q24-28 50 0 q24-28 50 0 q24-28 50 0 q26-28 52 0 q24-28 50 0 q24-28 50 0 q24-28 50 0 l0 34 h-402 z" fill="#7DC832"/>
+    <!-- tomato with drip -->
+    <path d="M44 250 h424 v26 c0 14-12 26-26 26 H70 c-14 0-26-12-26-26 v-2 q-6 22-22 22 q-16 0-16-20 q0-22 16-22 z" fill="#EF4136"/>
+    <!-- top bun -->
+    <path d="M40 248 C40 112 150 36 256 36 C362 36 472 112 472 248 Z" fill="#F4900C"/>
+  </g>
+  <!-- sesame seeds -->
+  <g fill="#231F20">
+    <rect x="146" y="138" width="9" height="30" rx="4.5" transform="rotate(-22 150 153)"/>
+    <rect x="231" y="112" width="9" height="30" rx="4.5" transform="rotate(14 235 127)"/>
+    <rect x="318" y="138" width="9" height="30" rx="4.5" transform="rotate(-12 322 153)"/>
+    <rect x="196" y="182" width="9" height="30" rx="4.5" transform="rotate(28 200 197)"/>
+  </g>
+</svg>
